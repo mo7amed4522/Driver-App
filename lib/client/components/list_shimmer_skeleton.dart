@@ -8,7 +8,7 @@ class ListShimmerSkeleton extends StatelessWidget {
     return ListView.builder(
       scrollDirection: Axis.vertical,
       shrinkWrap: true,
-      itemBuilder: (_, _) => Padding(
+      itemBuilder: (_, __) => Padding(
         padding: const EdgeInsets.only(top: 32),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

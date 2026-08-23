@@ -22,7 +22,7 @@ This project and everyone participating in it is governed by our [Code of Conduc
 
 ### Prerequisites
 
-- Flutter SDK 3.22.0 or higher
+- Flutter SDK 3.47.1 or higher
 - Dart SDK 3.13.0 or higher
 - Git
 - A GitHub account
@@ -34,14 +34,14 @@ This project and everyone participating in it is governed by our [Code of Conduc
 2. Clone your fork locally:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Driver-App.git
+git clone https://github.com/mo7amed4522/Driver-App.git
 cd Driver-App
 ```
 
 3. Add the upstream repository:
 
 ```bash
-git remote add upstream https://github.com/ORIGINAL_OWNER/Driver-App.git
+git remote add upstream https://github.com/mo7amed4522/Driver-App.git
 ```
 
 4. Install dependencies:
@@ -281,7 +281,7 @@ flutter test --coverage
 
 ### Before Reporting
 
-1. Check if the bug has already been reported in [Issues](https://github.com/ORIGINAL_OWNER/Driver-App/issues)
+1. Check if the bug has already been reported in [Issues](https://github.com/mo7amed4522/Driver-App/issues)
 2. Try to reproduce the bug in the latest version
 3. Collect relevant information (logs, screenshots, device info)
 
@@ -314,7 +314,7 @@ We welcome feature suggestions! Please:
 
 ## Questions?
 
-- Open a [Discussion](https://github.com/ORIGINAL_OWNER/Driver-App/discussions)
+- Open a [Discussion](https://github.com/mo7amed4522/Driver-App/discussions)
 - Contact the maintainers
 - Join our community chat (if available)
 

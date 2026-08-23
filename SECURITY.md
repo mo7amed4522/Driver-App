@@ -201,7 +201,7 @@ Security updates are released as soon as possible after a vulnerability is confi
 - Watch this repository for security advisories
 - Subscribe to our security mailing list
 - Enable automatic updates on your device
-- Check the [Releases](https://github.com/ORIGINAL_OWNER/Driver-App/releases) page regularly
+- Check the [Releases](https://github.com/mo7amed4522/Driver-App/releases) page regularly
 
 ### Applying Updates
 

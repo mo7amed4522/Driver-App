@@ -1,7 +1,7 @@
 # Ridy Driver App
 
-[![Flutter CI](https://github.com/YOUR_USERNAME/Driver-App/actions/workflows/dart.yml/badge.svg)](https://github.com/YOUR_USERNAME/Driver-App/actions/workflows/dart.yml)
-[![Version](https://img.shields.io/badge/version-2.3.2-blue.svg)](https://github.com/YOUR_USERNAME/Driver-App/releases)
+[![Flutter CI](https://github.com/mo7amed4522/Driver-App/actions/workflows/dart.yml/badge.svg)](https://github.com/mo7amed4522/Driver-App/actions/workflows/dart.yml)
+[![Version](https://img.shields.io/badge/version-2.3.2-blue.svg)](https://github.com/mo7amed4522/Driver-App/releases)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 **Ridy Driver App** is a comprehensive driver application built with Flutter, designed to provide a seamless experience for ride-sharing drivers. The app includes real-time location tracking, route management, chat functionality, and analytics.
@@ -27,7 +27,7 @@ _Add your app screenshots here_
 
 Before you begin, ensure you have the following installed:
 
-- **Flutter SDK**: Version 3.22.0 or higher
+- **Flutter SDK**: Version 3.47.1 or higher
 - **Dart SDK**: Version 3.13.0 or higher
 - **Android Studio** / **Xcode**: For Android/iOS development
 - **Git**: For version control
@@ -37,7 +37,7 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Driver-App.git
+git clone https://github.com/mo7amed4522/Driver-App.git
 cd Driver-App
 ```
 
@@ -182,8 +182,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/YOUR_USERNAME/Driver-App/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/YOUR_USERNAME/Driver-App/discussions)
+- **Issues**: [GitHub Issues](https://github.com/mo7amed4522/Driver-App/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/mo7amed4522/Driver-App/discussions)
 - **Email**: support@ridy.app
 
 ## Acknowledgments
