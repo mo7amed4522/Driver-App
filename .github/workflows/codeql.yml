@@ -53,8 +53,7 @@ jobs:
       - name: Compile Java/Kotlin (skip native builds)
         run: |
           cd android
-          ./gradlew compileDebugKotlin compileReleaseKotlin \
-            -PflutterMode=release \
+          ./gradlew compileDebugSources compileReleaseSources \
             --no-daemon \
             --no-configuration-cache \
             2>&1 || true
