@@ -1,0 +1,85 @@
+name: Bug Report
+description: Report a bug or issue
+title: "[BUG] "
+labels: ["bug"]
+assignees: ""
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug! Please fill out the information below to help us reproduce and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe what you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Describe what actually happened
+    validations:
+      required: true
+
+  - type: input
+    id: app_version
+    attributes:
+      label: App Version
+      description: The version of the app you are using (e.g., 2.3.2)
+      placeholder: e.g., 2.3.2
+
+  - type: input
+    id: device_model
+    attributes:
+      label: Device Model
+      description: Your device model (e.g., iPhone 12, Pixel 7)
+      placeholder: e.g., iPhone 12
+
+  - type: input
+    id: os_version
+    attributes:
+      label: OS Version
+      description: Your operating system version (e.g., iOS 15, Android 13)
+      placeholder: e.g., Android 13
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: Add screenshots or screen recordings if applicable
+      render: markdown
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant error logs or stack traces
+      placeholder: Paste relevant logs here
+      render: shell
