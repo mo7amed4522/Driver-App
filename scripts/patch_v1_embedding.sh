@@ -54,45 +54,79 @@ def patch_geolocator(pkg_dir):
     if not java_file.exists():
         return False
     content = java_file.read_text()
+    lines = content.split('\n')
+    result = []
+    i = 0
     modified = False
 
-    old_field = '''  @SuppressWarnings("deprecation")
-  @Nullable
-  private io.flutter.plugin.common.PluginRegistry.Registrar pluginRegistrar;
-'''
-    if old_field in content:
-        content = content.replace(old_field, '')
-        modified = True
+    while i < len(lines):
+        line = lines[i]
 
-    pattern = r'''  // This static function is optional and equivalent to onAttachedToEngine\..*?
-  public static void registerWith\(io\.flutter\.plugin\.common\.PluginRegistry\.Registrar registrar\) \{[^}]*\{[^}]*\}[^}]*\}
-'''
-    content_new = re.sub(pattern, '', content, flags=re.DOTALL)
-    if content_new != content:
-        content = content_new
-        modified = True
+        # Skip the pluginRegistrar field (3 lines: annotation, annotation, field)
+        if '@SuppressWarnings("deprecation")' in line and i + 2 < len(lines):
+            if '@Nullable' in lines[i+1] and 'pluginRegistrar' in lines[i+2]:
+                i += 3
+                modified = True
+                continue
 
-    old_method = '''  private void registerListeners() {
-    if (pluginRegistrar != null) {
-      pluginRegistrar.addActivityResultListener(this.geolocationManager);
-      pluginRegistrar.addRequestPermissionsResultListener(this.permissionManager);
-    } else if (pluginBinding != null) {
-      pluginBinding.addActivityResultListener(this.geolocationManager);
-      pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
-    }
-  }'''
-    new_method = '''  private void registerListeners() {
+        # Skip the registerWith static method (find by signature, skip until matching close brace)
+        if 'public static void registerWith(' in line and 'Registrar registrar' in line:
+            # Skip backwards to remove leading comment block
+            comment_start = i
+            while comment_start > 0 and lines[comment_start].strip().startswith('//'):
+                comment_start -= 1
+            # Skip blank line before comment
+            if comment_start > 0 and lines[comment_start].strip() == '':
+                comment_start -= 1
+            # Skip @SuppressWarnings before comment
+            if comment_start > 0 and '@SuppressWarnings' in lines[comment_start]:
+                comment_start -= 1
+            # Find the matching closing brace
+            brace_count = 0
+            j = i
+            while j < len(lines):
+                brace_count += lines[j].count('{') - lines[j].count('}')
+                if brace_count == 0 and '{' in lines[i]:
+                    break
+                j += 1
+            i = j + 1
+            modified = True
+            continue
+
+        # Fix registerListeners method - remove pluginRegistrar branch
+        if 'private void registerListeners()' in line:
+            # Collect the method body
+            method_lines = [line]
+            j = i + 1
+            brace_count = 1
+            while j < len(lines) and brace_count > 0:
+                method_lines.append(lines[j])
+                brace_count += lines[j].count('{') - lines[j].count('}')
+                j += 1
+            # Check if it has the pluginRegistrar branch
+            method_text = '\n'.join(method_lines)
+            if 'pluginRegistrar' in method_text:
+                # Replace with simplified version
+                new_method = '''  private void registerListeners() {
     if (pluginBinding != null) {
       pluginBinding.addActivityResultListener(this.geolocationManager);
       pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
     }
   }'''
-    if old_method in content:
-        content = content.replace(old_method, new_method)
-        modified = True
+                result.append(new_method)
+                i = j
+                modified = True
+                continue
+            else:
+                result.extend(method_lines)
+                i = j
+                continue
+
+        result.append(line)
+        i += 1
 
     if modified:
-        java_file.write_text(content)
+        java_file.write_text('\n'.join(result))
         print(f"  Patched GeolocatorPlugin.java in {pkg_dir.name}")
     return modified
 
@@ -133,7 +167,6 @@ for pkg_dir in sorted(CACHE.glob("*-*/android")):
 for pkg_root in sorted(CACHE.glob("*-*/")):
     if not pkg_root.is_dir():
         continue
-    # Skip if already handled above (has android dir)
     if (pkg_root / "android").exists():
         continue
     if patch_google_fonts(pkg_root):
