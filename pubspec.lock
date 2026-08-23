@@ -469,10 +469,10 @@ packages:
     dependency: "direct main"
     description:
       name: fl_chart
-      sha256: "749b3342ea3e95cbf61a0fec31a62606e837377b8b6d0caa7367a7ef80f38b7d"
+      sha256: b938f77d042cbcd822936a7a359a7235bad8bd72070de1f827efc2cc297ac888
       url: "https://pub.dev"
     source: hosted
-    version: "0.55.2"
+    version: "1.2.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -559,18 +559,18 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_map
-      sha256: "59dfd14267b691bea55760786b47d3172d47cdcc0d79ff930746a5ad123491b8"
+      sha256: "52c65a977daae42f9aae6748418dd1535eaf27186e9bac9bf431843082bc75a3"
       url: "https://pub.dev"
     source: hosted
-    version: "3.1.0"
+    version: "4.0.0"
   flutter_map_location_marker:
     dependency: "direct main"
     description:
       name: flutter_map_location_marker
-      sha256: c65b31e0759ca36326318a281a76dfb13c782d438b5cf622b11059b752ced1e2
+      sha256: "9757dceadda71a53d2d4004cff4d53a29210086083bdfebf44a1c4feb07f8eb1"
       url: "https://pub.dev"
     source: hosted
-    version: "5.3.0"
+    version: "6.0.0"
   flutter_parsed_text:
     dependency: transitive
     description:
@@ -1217,10 +1217,10 @@ packages:
     dependency: "direct main"
     description:
       name: pinput
-      sha256: c41f42ee301505ae2375ec32871c985d3717bf8aee845620465b286e0140aad2
+      sha256: "4c3f1b84768b47a56a1abdaca551bd7cef4ac673b882209039ecdf803a5d6e68"
       url: "https://pub.dev"
     source: hosted
-    version: "5.0.2"
+    version: "6.0.2"
   platform:
     dependency: transitive
     description:
@@ -1253,14 +1253,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.2"
-  positioned_tap_detector_2:
-    dependency: transitive
-    description:
-      name: positioned_tap_detector_2
-      sha256: "52e06863ad3e1f82b058fd05054fc8c9caeeb3b47d5cea7a24bd9320746059c1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
   proj4dart:
     dependency: transitive
     description:
@@ -1482,14 +1474,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
-  universal_platform:
-    dependency: transitive
-    description:
-      name: universal_platform
-      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
   url_launcher:
     dependency: "direct main"
     description:

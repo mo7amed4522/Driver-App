@@ -351,9 +351,9 @@
     },
     {
       "name": "fl_chart",
-      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/fl_chart-0.55.2",
+      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/fl_chart-1.2.0",
       "packageUri": "lib/",
-      "languageVersion": "2.12"
+      "languageVersion": "3.6"
     },
     {
       "name": "flutter",
@@ -423,13 +423,13 @@
     },
     {
       "name": "flutter_map",
-      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/flutter_map-3.1.0",
+      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/flutter_map-4.0.0",
       "packageUri": "lib/",
       "languageVersion": "2.18"
     },
     {
       "name": "flutter_map_location_marker",
-      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/flutter_map_location_marker-5.3.0",
+      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/flutter_map_location_marker-6.0.0",
       "packageUri": "lib/",
       "languageVersion": "2.17"
     },
@@ -921,9 +921,9 @@
     },
     {
       "name": "pinput",
-      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/pinput-5.0.2",
+      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/pinput-6.0.2",
       "packageUri": "lib/",
-      "languageVersion": "2.15"
+      "languageVersion": "2.19"
     },
     {
       "name": "platform",
@@ -948,12 +948,6 @@
       "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/pool-1.5.2",
       "packageUri": "lib/",
       "languageVersion": "3.4"
-    },
-    {
-      "name": "positioned_tap_detector_2",
-      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/positioned_tap_detector_2-1.0.4",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
     },
     {
       "name": "proj4dart",
@@ -1120,12 +1114,6 @@
     {
       "name": "unicode",
       "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/unicode-0.3.1",
-      "packageUri": "lib/",
-      "languageVersion": "2.12"
-    },
-    {
-      "name": "universal_platform",
-      "rootUri": "file:///Users/mo7/.pub-cache/hosted/pub.dev/universal_platform-1.1.0",
       "packageUri": "lib/",
       "languageVersion": "2.12"
     },

@@ -144,7 +144,8 @@ class _EarningsViewState extends State<EarningsView> {
                               BarChartData(
                                 barTouchData: BarTouchData(
                                   touchTooltipData: BarTouchTooltipData(
-                                    tooltipBgColor: Colors.grey.shade800,
+                                    getTooltipColor: (_) =>
+                                        Colors.grey.shade800,
                                     getTooltipItem:
                                         (
                                           group,
