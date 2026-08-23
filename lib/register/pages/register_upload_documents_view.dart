@@ -22,12 +22,12 @@ class RegisterUploadDocumentsView extends StatefulWidget {
   final GetDriver$Query$Driver driver;
   final Function(bool loading) onLoadingStateUpdated;
 
-  const RegisterUploadDocumentsView(
-      {Key? key,
-      required this.driver,
-      required this.onUploaded,
-      required this.onLoadingStateUpdated})
-      : super(key: key);
+  const RegisterUploadDocumentsView({
+    super.key,
+    required this.driver,
+    required this.onUploaded,
+    required this.onLoadingStateUpdated,
+  });
 
   @override
   State<RegisterUploadDocumentsView> createState() =>
@@ -55,8 +55,10 @@ class _RegisterUploadDocumentsViewState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(S.of(context).register_profile_photo_title,
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  S.of(context).register_profile_photo_title,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   S.of(context).register_profile_photo_subtitle,
@@ -75,46 +77,56 @@ class _RegisterUploadDocumentsViewState
                       ),
                     ),
                     Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          decoration: BoxDecoration(
-                              color: CustomTheme.primaryColors.shade300,
-                              borderRadius: BorderRadius.circular(10)),
-                          child: Icon(
-                            Icons.add,
-                            color: CustomTheme.neutralColors.shade500,
-                          ),
-                        ))
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: CustomTheme.primaryColors.shade300,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(
+                          Icons.add,
+                          color: CustomTheme.neutralColors.shade500,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
                 CupertinoButton(
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
-                    onPressed: () async {
-                      FilePickerResult? result = await FilePicker.platform
-                          .pickFiles(type: FileType.image);
-                      if (result != null && result.files.single.path != null) {
-                        final profilePic = await uploadFile(
-                            result.files.single.path!, UploadMedia.profile);
-                        setState(() {
-                          profilePicture = profilePic;
-                        });
-                      }
-                    },
-                    minimumSize: Size(0, 0),
-                    child: Text(S.of(context).action_add_photo)),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 6,
+                  ),
+                  onPressed: () async {
+                    FilePickerResult? result = await FilePicker.platform
+                        .pickFiles(type: FileType.image);
+                    if (result != null && result.files.single.path != null) {
+                      final profilePic = await uploadFile(
+                        result.files.single.path!,
+                        UploadMedia.profile,
+                      );
+                      setState(() {
+                        profilePicture = profilePic;
+                      });
+                    }
+                  },
+                  minimumSize: Size(0, 0),
+                  child: Text(S.of(context).action_add_photo),
+                ),
                 const SizedBox(height: 12),
-                Text(S.of(context).register_upload_documents_title,
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  S.of(context).register_upload_documents_title,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 Text(
                   S.of(context).register_upload_documents_subtitle,
                   style: Theme.of(context).textTheme.labelMedium,
                 ),
                 const SizedBox(height: 16),
-                Row(children: [
-                  ElevatedButton(
+                Row(
+                  children: [
+                    ElevatedButton(
                       onPressed: () async {
                         FilePickerResult? result = await FilePicker.platform
                             .pickFiles(type: FileType.image);
@@ -122,7 +134,9 @@ class _RegisterUploadDocumentsViewState
                         if (result != null &&
                             result.files.single.path != null) {
                           final file = await uploadFile(
-                              result.files.single.path!, UploadMedia.document);
+                            result.files.single.path!,
+                            UploadMedia.document,
+                          );
                           setState(() {
                             documents = documents.followedBy([file]).toList();
                           });
@@ -140,95 +154,106 @@ class _RegisterUploadDocumentsViewState
                               Text(
                                 S.of(context).action_upload_document,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .headlineSmall
+                                style: Theme.of(context).textTheme.headlineSmall
                                     ?.copyWith(fontSize: 14),
                               ),
                             ],
                           ),
                         ),
-                      )),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: documents
-                            .map(
-                              (e) => Container(
-                                padding: const EdgeInsets.only(left: 8),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: Image.network(
-                                    serverUrl + e.address,
-                                    width: 105,
-                                    height: 105,
-                                    fit: BoxFit.cover,
-                                  ),
-                                ),
-                              ),
-                            )
-                            .toList(),
                       ),
                     ),
-                  )
-                ]),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: documents
+                              .map(
+                                (e) => Container(
+                                  padding: const EdgeInsets.only(left: 8),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Image.network(
+                                      serverUrl + e.address,
+                                      width: 105,
+                                      height: 105,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
         ),
         Mutation(
-            options: MutationOptions(
-                document: SET_DOCUMENTS_ON_DRIVER_MUTATION_DOCUMENT),
-            builder: (RunMutation runMutation, QueryResult? result) {
-              return SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    widget.onLoadingStateUpdated(true);
-                    final inp = SetDocumentsOnDriverArguments(
-                        driverId: widget.driver.id,
-                        relationIds: documents.map((e) => e.id).toList());
-                    await runMutation(inp.toJson()).networkResult;
-                    widget.onLoadingStateUpdated(false);
-                    showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                              title: Text(demoMode
-                                  ? S.of(context).title_important
-                                  : S.of(context).title_success),
-                              content: Text(demoMode
-                                  ? S
-                                      .of(context)
-                                      .driver_registration_approved_demo_mode
-                                  : S
-                                      .of(context)
-                                      .driver_register_profile_submitted_message),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    int count = 0;
-                                    Navigator.popUntil(context, (route) {
-                                      return count++ == 2;
-                                    });
-                                  },
-                                  child: Text(S.of(context).action_ok),
-                                )
-                              ],
-                            ));
-                  },
-                  child: Text(S.of(context).action_confirm_and_continue),
-                ),
-              );
-            })
+          options: MutationOptions(
+            document: SET_DOCUMENTS_ON_DRIVER_MUTATION_DOCUMENT,
+          ),
+          builder: (RunMutation runMutation, QueryResult? result) {
+            return SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  widget.onLoadingStateUpdated(true);
+                  final inp = SetDocumentsOnDriverArguments(
+                    driverId: widget.driver.id,
+                    relationIds: documents.map((e) => e.id).toList(),
+                  );
+                  await runMutation(inp.toJson()).networkResult;
+                  widget.onLoadingStateUpdated(false);
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(
+                        demoMode
+                            ? S.of(context).title_important
+                            : S.of(context).title_success,
+                      ),
+                      content: Text(
+                        demoMode
+                            ? S
+                                  .of(context)
+                                  .driver_registration_approved_demo_mode
+                            : S
+                                  .of(context)
+                                  .driver_register_profile_submitted_message,
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            int count = 0;
+                            Navigator.popUntil(context, (route) {
+                              return count++ == 2;
+                            });
+                          },
+                          child: Text(S.of(context).action_ok),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Text(S.of(context).action_confirm_and_continue),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
 
   Future<GetDriver$Query$Driver$Media> uploadFile(
-      String path, UploadMedia media) async {
+    String path,
+    UploadMedia media,
+  ) async {
     var postUri = Uri.parse(
-        "$serverUrl${media == UploadMedia.profile ? "upload_profile" : "upload_document"}");
+      "$serverUrl${media == UploadMedia.profile ? "upload_profile" : "upload_document"}",
+    );
     var request = http.MultipartRequest("POST", postUri);
     request.headers['Authorization'] =
         'Bearer ${Hive.box('user').get('jwt').toString()}';

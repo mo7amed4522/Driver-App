@@ -14,9 +14,11 @@ class OrderInvoiceView extends StatelessWidget {
   final CurrentOrderMixin order;
   final Function() onCashPaymentReceived;
 
-  const OrderInvoiceView(
-      {required this.order, required this.onCashPaymentReceived, Key? key})
-      : super(key: key);
+  const OrderInvoiceView({
+    required this.order,
+    required this.onCashPaymentReceived,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +28,10 @@ class OrderInvoiceView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SheetTitleView(title: S.of(context).invoice_dialog_title),
-          Text(S.of(context).invoice_dialog_heading,
-              style: Theme.of(context).textTheme.headlineMedium),
+          Text(
+            S.of(context).invoice_dialog_heading,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
           const SizedBox(height: 4),
           Text(
             S.of(context).invoice_dialog_body,
@@ -36,60 +40,71 @@ class OrderInvoiceView extends StatelessWidget {
           const SizedBox(height: 8),
           Center(
             child: UserAvatarView(
-                urlPrefix: serverUrl,
-                url: order.rider.media?.address,
-                cornerRadius: 12,
-                size: 60),
+              urlPrefix: serverUrl,
+              url: order.rider.media?.address,
+              cornerRadius: 12,
+              size: 60,
+            ),
           ),
           const SizedBox(height: 8),
           Center(
-              child: Text(
-                  "${order.rider.firstName ?? ""} ${order.rider.lastName ?? ""}",
-                  style: Theme.of(context).textTheme.titleMedium)),
+            child: Text(
+              "${order.rider.firstName ?? ""} ${order.rider.lastName ?? ""}",
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+          ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-                color: CustomTheme.neutralColors.shade100,
-                borderRadius: BorderRadius.circular(8)),
+              color: CustomTheme.neutralColors.shade100,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Column(
               children: [
                 Row(
                   children: [
-                    Text(order.service.name,
-                        style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      order.service.name,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     const Spacer(),
                     Text(
-                        NumberFormat.simpleCurrency(name: order.currency)
-                            .format(order.costAfterCoupon),
-                        style: Theme.of(context).textTheme.bodySmall)
+                      NumberFormat.simpleCurrency(name: order.currency)
+                          .format(order.costAfterCoupon),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
                 const Divider(),
                 Row(
                   children: [
-                    Text(S.of(context).invoice_item_tip,
-                        style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      S.of(context).invoice_item_tip,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                     const Spacer(),
                     Text(
-                        "+${NumberFormat.simpleCurrency(name: order.currency).format(order.tipAmount)}",
-                        style: Theme.of(context).textTheme.bodySmall)
+                      "+${NumberFormat.simpleCurrency(name: order.currency).format(order.tipAmount)}",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ],
                 ),
-                const Divider(
-                  thickness: 1.5,
-                ),
+                const Divider(thickness: 1.5),
                 Row(
                   children: [
-                    Text(S.of(context).invoice_item_subtotal,
-                        style: Theme.of(context).textTheme.headlineMedium),
+                    Text(
+                      S.of(context).invoice_item_subtotal,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                     const Spacer(),
                     Text(
-                        NumberFormat.simpleCurrency(name: order.currency)
-                            .format(order.costAfterCoupon + order.tipAmount),
-                        style: Theme.of(context).textTheme.headlineMedium)
+                      NumberFormat.simpleCurrency(name: order.currency)
+                          .format(order.costAfterCoupon + order.tipAmount),
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -97,12 +112,13 @@ class OrderInvoiceView extends StatelessWidget {
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
-                onPressed: onCashPaymentReceived,
-                child: Text(
-                  S.of(context).order_status_action_received_cash,
-                  style: Theme.of(context).textTheme.titleMedium,
-                )).px4(),
-          )
+              onPressed: onCashPaymentReceived,
+              child: Text(
+                S.of(context).order_status_action_received_cash,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+            ).px4(),
+          ),
         ],
       ),
     );

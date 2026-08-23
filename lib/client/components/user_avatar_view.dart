@@ -9,36 +9,33 @@ class UserAvatarView extends StatelessWidget {
   final double size;
   final Color? backgroundColor;
 
-  const UserAvatarView(
-      {required this.urlPrefix,
-      required this.url,
-      required this.cornerRadius,
-      required this.size,
-      this.backgroundColor,
-      Key? key})
-      : super(key: key);
+  const UserAvatarView({
+    required this.urlPrefix,
+    required this.url,
+    required this.cornerRadius,
+    required this.size,
+    this.backgroundColor,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-        borderRadius: BorderRadius.circular(cornerRadius),
-        child: url != null
-            ? Image.network(
-                urlPrefix + url!,
-                width: size,
-                height: size,
-              )
-            : Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(cornerRadius),
-                  color: backgroundColor ?? CustomTheme.neutralColors.shade100,
-                ),
-                child: Icon(
-                  Ionicons.person,
-                  size: size,
-                  color: CustomTheme.neutralColors.shade600,
-                ),
-              ));
+      borderRadius: BorderRadius.circular(cornerRadius),
+      child: url != null
+          ? Image.network(urlPrefix + url!, width: size, height: size)
+          : Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(cornerRadius),
+                color: backgroundColor ?? CustomTheme.neutralColors.shade100,
+              ),
+              child: Icon(
+                Ionicons.person,
+                size: size,
+                color: CustomTheme.neutralColors.shade600,
+              ),
+            ),
+    );
   }
 }

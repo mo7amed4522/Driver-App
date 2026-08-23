@@ -4,27 +4,32 @@ import 'package:ridy/client/theme/theme.dart';
 class RidySheetView extends StatelessWidget {
   final Widget child;
 
-  const RidySheetView({required this.child, Key? key}) : super(key: key);
+  const RidySheetView({required this.child, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-        decoration: BoxDecoration(
-            color: CustomTheme.primaryColors.shade50,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                  color: Color(0x14000000),
-                  offset: Offset(0, -3),
-                  blurRadius: 25)
-            ]),
-        child: SafeArea(
-            top: false,
-            minimum: EdgeInsets.only(
-                top: 16,
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 16),
-            child: child));
+      decoration: BoxDecoration(
+        color: CustomTheme.primaryColors.shade50,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            offset: Offset(0, -3),
+            blurRadius: 25,
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        minimum: EdgeInsets.only(
+          top: 16,
+          left: 16,
+          right: 16,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        ),
+        child: child,
+      ),
+    );
   }
 }

@@ -8,11 +8,12 @@ import 'package:ridy/client/wallet/wallet_card_view.dart';
 
 import 'package:ridy/generated/l10n.dart';
 import 'package:ridy/wallet/add_credit_sheet_view.dart';
+
 import '../graphql/generated/graphql_api.graphql.dart';
 import '../query_result_view.dart';
 
 class WalletView extends StatefulWidget {
-  const WalletView({Key? key}) : super(key: key);
+  const WalletView({super.key});
 
   @override
   State<WalletView> createState() => _WalletViewState();
@@ -32,36 +33,38 @@ class _WalletViewState extends State<WalletView> {
           }
         },
         child: Query(
-            options: QueryOptions(document: WALLET_QUERY_DOCUMENT),
-            builder: (QueryResult result,
-                {Refetch? refetch, FetchMore? fetchMore}) {
-              this.refetch = refetch;
-              if (result.isLoading || result.hasException) {
-                return QueryResultView(result);
-              }
-              final query = Wallet$Query.fromJson(result.data!);
-              final wallet = query.driverWallets;
-              final transactions = query.driverTransacions.edges;
-              if (wallet.isNotEmpty && selectedWalletIndex == null) {
-                selectedWalletIndex = 0;
-              }
-              final walletItem =
-                  wallet.isEmpty ? null : wallet[selectedWalletIndex ?? 0];
-              return SafeArea(
-                minimum: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RidyBackButton(text: S.of(context).action_back),
-                    WalletCardView(
-                      title: S.of(context).wallet_card_title(appName),
-                      actionAddCreditText:
-                          S.of(context).add_credit_dialog_title,
-                      currency: walletItem?.currency ?? defaultCurrency,
-                      credit: walletItem?.balance ?? 0,
-                      onAdddCredit: () {
-                        showModalBottomSheet(
+          options: QueryOptions(document: WALLET_QUERY_DOCUMENT),
+          builder:
+              (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
+                this.refetch = refetch;
+                if (result.isLoading || result.hasException) {
+                  return QueryResultView(result);
+                }
+                final query = Wallet$Query.fromJson(result.data!);
+                final wallet = query.driverWallets;
+                final transactions = query.driverTransacions.edges;
+                if (wallet.isNotEmpty && selectedWalletIndex == null) {
+                  selectedWalletIndex = 0;
+                }
+                final walletItem = wallet.isEmpty
+                    ? null
+                    : wallet[selectedWalletIndex ?? 0];
+                return SafeArea(
+                  minimum: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      RidyBackButton(text: S.of(context).action_back),
+                      WalletCardView(
+                        title: S.of(context).wallet_card_title(appName),
+                        actionAddCreditText: S
+                            .of(context)
+                            .add_credit_dialog_title,
+                        currency: walletItem?.currency ?? defaultCurrency,
+                        credit: walletItem?.balance ?? 0,
+                        onAdddCredit: () {
+                          showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
                             constraints: const BoxConstraints(maxWidth: 600),
@@ -70,16 +73,19 @@ class _WalletViewState extends State<WalletView> {
                                 currency:
                                     walletItem?.currency ?? defaultCurrency,
                               );
-                            });
-                      },
-                    ),
-                    const SizedBox(height: 32),
-                    Text(S.of(context).wallet_activities_heading,
-                        style: Theme.of(context).textTheme.headlineMedium),
-                    const SizedBox(height: 12),
-                    if (transactions.isNotEmpty)
-                      Expanded(
-                        child: ListView.builder(
+                            },
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        S.of(context).wallet_activities_heading,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      const SizedBox(height: 12),
+                      if (transactions.isNotEmpty)
+                        Expanded(
+                          child: ListView.builder(
                             itemCount: transactions.length,
                             itemBuilder: (context, index) {
                               final item = transactions[index].node;
@@ -92,23 +98,30 @@ class _WalletViewState extends State<WalletView> {
                                 currency: item.currency,
                                 icon: getTransactionIcon(item),
                               );
-                            }),
-                      ),
-                    if (transactions.isEmpty)
-                      Expanded(
+                            },
+                          ),
+                        ),
+                      if (transactions.isEmpty)
+                        Expanded(
                           child: Center(
-                              child: Text(
-                                  S.of(context).wallet_empty_state_message))),
-                  ],
-                ),
-              );
-            }),
+                            child: Text(
+                              S.of(context).wallet_empty_state_message,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                );
+              },
+        ),
       ),
     );
   }
 
   String getDeductText(
-      BuildContext context, DriverDeductTransactionType deductType) {
+    BuildContext context,
+    DriverDeductTransactionType deductType,
+  ) {
     switch (deductType) {
       case DriverDeductTransactionType.commission:
         return S.of(context).enum_driver_deduct_transaction_type_commission;
@@ -144,8 +157,9 @@ class _WalletViewState extends State<WalletView> {
   }
 
   IconData getTransactionIcon(
-      Wallet$Query$DriverTransacionConnection$DriverTransacionEdge$DriverTransacion
-          transacion) {
+    Wallet$Query$DriverTransacionConnection$DriverTransacionEdge$DriverTransacion
+    transacion,
+  ) {
     if (transacion.action == TransactionAction.recharge) {
       switch (transacion.rechargeType) {
         case DriverRechargeTransactionType.bankTransfer:

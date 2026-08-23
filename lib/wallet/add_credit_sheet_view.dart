@@ -14,8 +14,7 @@ import '../config.dart';
 
 class AddCreditSheetView extends StatefulWidget {
   final String currency;
-  const AddCreditSheetView({required this.currency, Key? key})
-      : super(key: key);
+  const AddCreditSheetView({required this.currency, super.key});
 
   @override
   State<AddCreditSheetView> createState() => _AddCreditSheetViewState();
@@ -29,10 +28,11 @@ class _AddCreditSheetViewState extends State<AddCreditSheetView> {
   Widget build(BuildContext context) {
     return SafeArea(
       minimum: EdgeInsets.only(
-          top: 16,
-          left: 16,
-          right: 16,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 16),
+        top: 16,
+        left: 16,
+        right: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -43,18 +43,22 @@ class _AddCreditSheetViewState extends State<AddCreditSheetView> {
             style: Theme.of(context).textTheme.headlineMedium,
           ).pOnly(bottom: 8),
           Query(
-              options: QueryOptions(document: PAYMENT_GATEWAYS_QUERY_DOCUMENT),
-              builder: (QueryResult result,
-                  {Future<QueryResult?> Function()? refetch,
-                  FetchMore? fetchMore}) {
-                if (result.isLoading || result.hasException) {
-                  return QueryResultView(result);
-                }
-                final gateways = PaymentGateways$Query.fromJson(result.data!)
-                    .paymentGateways;
-                return Column(
+            options: QueryOptions(document: PAYMENT_GATEWAYS_QUERY_DOCUMENT),
+            builder:
+                (
+                  QueryResult result, {
+                  Future<QueryResult?> Function()? refetch,
+                  FetchMore? fetchMore,
+                }) {
+                  if (result.isLoading || result.hasException) {
+                    return QueryResultView(result);
+                  }
+                  final gateways = PaymentGateways$Query.fromJson(result.data!)
+                      .paymentGateways;
+                  return Column(
                     children: gateways
-                        .map((gateway) => PaymentMethodItem(
+                        .map(
+                          (gateway) => PaymentMethodItem(
                             id: gateway.id,
                             title: gateway.title,
                             selectedValue: selectedGatewayId,
@@ -63,9 +67,13 @@ class _AddCreditSheetViewState extends State<AddCreditSheetView> {
                                 : null,
                             onSelected: (value) {
                               setState(() => selectedGatewayId = gateway.id);
-                            }))
-                        .toList());
-              }),
+                            },
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
+          ),
           const SizedBox(height: 16),
           Text(
             S.of(context).add_credit_dialog_chose_amount,
@@ -73,39 +81,47 @@ class _AddCreditSheetViewState extends State<AddCreditSheetView> {
           ),
           const SizedBox(height: 16),
           MoneyPresetsGroup(
-              onAmountChanged: (value) => setState(() => amount = value)),
+            onAmountChanged: (value) => setState(() => amount = value),
+          ),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
             child: Mutation(
-                options: MutationOptions(
-                    document: TOP_UP_WALLET_MUTATION_DOCUMENT,
-                    fetchPolicy: FetchPolicy.noCache),
-                builder: (RunMutation runMutation, QueryResult? result) {
-                  return ElevatedButton(
-                    onPressed: ((result?.isLoading ?? false) ||
-                            amount == null ||
-                            selectedGatewayId == null)
-                        ? null
-                        : () async {
-                            Navigator.pop(context);
-                            final mutationResult = await runMutation(
-                                    TopUpWalletArguments(
-                                            input: TopUpWalletInput(
-                                                gatewayId: selectedGatewayId!,
-                                                amount: amount!,
-                                                currency: widget.currency))
-                                        .toJson())
-                                .networkResult;
-                            final resultParsed = TopUpWallet$Mutation.fromJson(
-                                mutationResult!.data!);
-                            launchUrl(Uri.parse(resultParsed.topUpWallet.url),
-                                mode: LaunchMode.externalApplication);
-                          },
-                    child: Text(S.of(context).top_up_sheet_pay_button),
-                  );
-                }),
-          )
+              options: MutationOptions(
+                document: TOP_UP_WALLET_MUTATION_DOCUMENT,
+                fetchPolicy: FetchPolicy.noCache,
+              ),
+              builder: (RunMutation runMutation, QueryResult? result) {
+                return ElevatedButton(
+                  onPressed:
+                      ((result?.isLoading ?? false) ||
+                          amount == null ||
+                          selectedGatewayId == null)
+                      ? null
+                      : () async {
+                          Navigator.pop(context);
+                          final mutationResult = await runMutation(
+                            TopUpWalletArguments(
+                              input: TopUpWalletInput(
+                                gatewayId: selectedGatewayId!,
+                                amount: amount!,
+                                currency: widget.currency,
+                              ),
+                            ).toJson(),
+                          ).networkResult;
+                          final resultParsed = TopUpWallet$Mutation.fromJson(
+                            mutationResult!.data!,
+                          );
+                          launchUrl(
+                            Uri.parse(resultParsed.topUpWallet.url),
+                            mode: LaunchMode.externalApplication,
+                          );
+                        },
+                  child: Text(S.of(context).top_up_sheet_pay_button),
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

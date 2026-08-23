@@ -7,12 +7,12 @@ class RideOptionItem extends StatelessWidget {
   final String text;
   final Function()? onPressed;
 
-  const RideOptionItem(
-      {required this.icon,
-      required this.text,
-      required this.onPressed,
-      Key? key})
-      : super(key: key);
+  const RideOptionItem({
+    required this.icon,
+    required this.text,
+    required this.onPressed,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,19 +23,14 @@ class RideOptionItem extends StatelessWidget {
         children: [
           Container(
             decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8),
-                color: CustomTheme.neutralColors.shade200),
-            padding: const EdgeInsets.all(12),
-            child: Icon(
-              icon,
-              color: CustomTheme.neutralColors.shade600,
+              borderRadius: BorderRadius.circular(8),
+              color: CustomTheme.neutralColors.shade200,
             ),
+            padding: const EdgeInsets.all(12),
+            child: Icon(icon, color: CustomTheme.neutralColors.shade600),
           ),
           const SizedBox(width: 8),
-          Text(
-            text,
-            style: Theme.of(context).textTheme.titleMedium,
-          )
+          Text(text, style: Theme.of(context).textTheme.titleMedium),
         ],
       ),
     );

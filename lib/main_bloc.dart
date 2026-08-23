@@ -1,6 +1,7 @@
 // ignore_for_file: strict_top_level_inference
 
 import 'graphql/generated/graphql_api.dart';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -71,18 +72,22 @@ class StatusOnline extends MainState {
   AvailableOrderMixin? selectedOrder;
 
   StatusOnline({driver, required this.orders, this.selectedOrder})
-      : super(
-            driver,
-            selectedOrder != null
-                ? selectedOrder.points
-                    .asMap()
-                    .entries
-                    .map((e) => MarkerData(
-                        id: e.value.lat.toString(),
-                        position: LatLng(e.value.lat, e.value.lng),
-                        address: selectedOrder.addresses[e.key]))
-                    .toList()
-                : []);
+    : super(
+        driver,
+        selectedOrder != null
+            ? selectedOrder.points
+                  .asMap()
+                  .entries
+                  .map(
+                    (e) => MarkerData(
+                      id: e.value.lat.toString(),
+                      position: LatLng(e.value.lat, e.value.lng),
+                      address: selectedOrder.addresses[e.key],
+                    ),
+                  )
+                  .toList()
+            : [],
+      );
 }
 
 class StatusInService extends MainState {
@@ -95,9 +100,10 @@ class StatusInService extends MainState {
           order.status == OrderStatus.arrived) {
         markers = [
           MarkerData(
-              id: order.points[0].lat.toString(),
-              position: LatLng(order.points[0].lat, order.points[0].lng),
-              address: order.addresses[0])
+            id: order.points[0].lat.toString(),
+            position: LatLng(order.points[0].lat, order.points[0].lng),
+            address: order.addresses[0],
+          ),
         ];
       }
       if (order.status == OrderStatus.started) {
@@ -106,11 +112,16 @@ class StatusInService extends MainState {
             .toList()
             .asMap()
             .entries
-            .map<MarkerData>((e) => MarkerData(
+            .map<MarkerData>(
+              (e) => MarkerData(
                 id: order.points[e.key].lat.toString(),
-                position:
-                    LatLng(order.points[e.key].lat, order.points[e.key].lng),
-                address: order.addresses[e.key]))
+                position: LatLng(
+                  order.points[e.key].lat,
+                  order.points[e.key].lng,
+                ),
+                address: order.addresses[e.key],
+              ),
+            )
             .toList();
       }
     }
@@ -157,64 +168,83 @@ class MainBloc extends Bloc<MainEvent, MainState> {
       // }
       List<AvailableOrderMixin> orders = event.orders
           .map<AvailableOrders$Query$Order>(
-              (orderObj) => AvailableOrders$Query$Order.fromJson(orderObj))
+            (orderObj) => AvailableOrders$Query$Order.fromJson(orderObj),
+          )
           .toList();
       final sumOldIds = (state as StatusOnline).orders.fold<int>(
-          0, (previousValue, element) => previousValue + int.parse(element.id));
+        0,
+        (previousValue, element) => previousValue + int.parse(element.id),
+      );
       final sumNewIds = orders.fold<int>(
-          0, (value, element) => value + int.parse(element.id));
+        0,
+        (value, element) => value + int.parse(element.id),
+      );
       if (sumNewIds != sumOldIds) {
-        emit(StatusOnline(
+        emit(
+          StatusOnline(
             driver: state.driver,
             orders: orders,
-            selectedOrder: orders.isNotEmpty ? orders.first : null));
+            selectedOrder: orders.isNotEmpty ? orders.first : null,
+          ),
+        );
       }
     });
 
     on<AvailabledOrderAdded>((event, emit) {
       if (state is StatusOnline) {
         if ((state as StatusOnline).orders.indexWhere(
-                (element) => element.id == event.order['orderCreated']['id']) ==
+              (element) => element.id == event.order['orderCreated']['id'],
+            ) ==
             -1) {
           final AvailableOrderMixin created =
               AvailableOrders$Query$Order.fromJson(
-                  event.order['orderCreated'] as Map<String, dynamic>);
+                event.order['orderCreated'] as Map<String, dynamic>,
+              );
           (state as StatusOnline).orders.add(created);
-          emit(StatusOnline(
+          emit(
+            StatusOnline(
               driver: state.driver,
               orders: (state as StatusOnline).orders,
               selectedOrder: (state as StatusOnline).orders.length == 1
                   ? (state as StatusOnline).orders.first
-                  : (state as StatusOnline).selectedOrder));
+                  : (state as StatusOnline).selectedOrder,
+            ),
+          );
         }
       }
     });
 
     on<AvailableOrderRemoved>((event, emit) {
       if (state is StatusOnline) {
-        final updated =
-            OrderRemoved$Subscription.fromJson(event.order).orderRemoved;
-        if ((state as StatusOnline)
-                .orders
-                .indexWhere((element) => element.id == updated.id) >
+        final updated = OrderRemoved$Subscription.fromJson(event.order)
+            .orderRemoved;
+        if ((state as StatusOnline).orders.indexWhere(
+              (element) => element.id == updated.id,
+            ) >
             -1) {
-          (state as StatusOnline)
-              .orders
-              .removeWhere((element) => element.id == updated.id);
-          emit(StatusOnline(
+          (state as StatusOnline).orders.removeWhere(
+            (element) => element.id == updated.id,
+          );
+          emit(
+            StatusOnline(
               driver: state.driver,
               orders: (state as StatusOnline).orders,
-              selectedOrder: (state as StatusOnline).selectedOrder));
+              selectedOrder: (state as StatusOnline).selectedOrder,
+            ),
+          );
         }
       }
     });
 
     on<SelectedOrderChanged>((event, emit) {
       if (state is StatusOnline) {
-        emit(StatusOnline(
+        emit(
+          StatusOnline(
             driver: state.driver,
             orders: (state as StatusOnline).orders,
-            selectedOrder: (state as StatusOnline).orders[event.index]));
+            selectedOrder: (state as StatusOnline).orders[event.index],
+          ),
+        );
       }
     });
 
@@ -223,7 +253,7 @@ class MainBloc extends Bloc<MainEvent, MainState> {
         OrderStatus.riderCanceled,
         OrderStatus.driverCanceled,
         OrderStatus.finished,
-        OrderStatus.waitingForReview
+        OrderStatus.waitingForReview,
       ];
       final order = BasicProfileMixin$Order.fromJson(event.order);
       if (endedStatuses.contains(order.status)) {
