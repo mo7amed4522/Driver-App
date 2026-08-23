@@ -6,8 +6,9 @@ set -euo pipefail
 #        deprecated package= in manifests, and google_fonts const issues.
 
 CACHE="$HOME/.pub-cache/hosted/pub.dev"
+PROJECT_DIR="$(pwd)"
 
-python3 << 'PYEOF'
+python3 << PYEOF
 import os
 import re
 import subprocess
@@ -15,22 +16,10 @@ import sys
 from pathlib import Path
 
 CACHE = Path(os.environ.get("CACHE", os.path.expanduser("~/.pub-cache/hosted/pub.dev")))
-PROJECT_DIR = Path("/Volumes/Untitled/projects/Driver-App")
+PROJECT_DIR = Path("$PROJECT_DIR")
 
 def get_locked_packages():
-    """Get list of packages in pubspec.lock that have Android sources."""
-    result = subprocess.run(
-        ["flutter", "pub", "deps", "--no-dev"],
-        capture_output=True, text=True, cwd=PROJECT_DIR
-    )
-    # Also include dev dependencies for packages that might have Android code
-    result2 = subprocess.run(
-        ["flutter", "pub", "deps"],
-        capture_output=True, text=True, cwd=PROJECT_DIR
-    )
-    all_output = result.stdout + result2.stdout
-    
-    # Parse package names from lockfile
+    """Get list of package names from pubspec.lock."""
     lockfile = PROJECT_DIR / "pubspec.lock"
     packages = set()
     if lockfile.exists():
@@ -146,10 +135,9 @@ for pkg_dir in sorted(CACHE.glob("*-*/android")):
     # Only patch packages used by this project
     base_name = pkg_name.split('-')[0]
     if base_name not in packages and pkg_name not in packages:
-        # Quick check: see if any package prefix matches
         found = False
         for p in packages:
-            if pkg_name.startswith(p) or p.startswith(pkg_name.split('-')[0]):
+            if pkg_name.startswith(p) or p.startswith(base_name):
                 found = True
                 break
         if not found:
