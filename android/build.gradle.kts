@@ -1,3 +1,7 @@
+// Copyright 2014 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license.
+// found in the LICENSE file.
+
 allprojects {
     repositories {
         google()
@@ -5,16 +9,20 @@ allprojects {
     }
 }
 
-val newBuildDir: Directory =
+rootProject.layout.buildDirectory.value(
     rootProject.layout.buildDirectory
         .dir("../../build")
         .get()
-rootProject.layout.buildDirectory.value(newBuildDir)
+)
 
 subprojects {
-    val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
-    project.layout.buildDirectory.value(newSubprojectBuildDir)
+    project.layout.buildDirectory.value(
+        rootProject.layout.buildDirectory
+            .dir(project.name)
+            .get()
+    )
 }
+
 subprojects {
     project.evaluationDependsOn(":app")
 }
