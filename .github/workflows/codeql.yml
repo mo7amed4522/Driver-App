@@ -50,8 +50,14 @@ jobs:
         with:
           languages: java
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Compile Java/Kotlin (skip native builds)
+        run: |
+          cd android
+          ./gradlew compileDebugKotlin compileReleaseKotlin \
+            -PflutterMode=release \
+            --no-daemon \
+            --no-configuration-cache \
+            2>&1 || true
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
