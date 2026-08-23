@@ -15,252 +15,286 @@ import 'package:url_launcher/url_launcher.dart';
 import 'config.dart';
 import 'generated/l10n.dart';
 import 'main_bloc.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:velocity_x/velocity_x.dart';
+
 import 'graphql/generated/graphql_api.dart';
+
 import 'package:map_launcher/map_launcher.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class OrderStatusCardView extends StatelessWidget {
   final CurrentOrderMixin order;
-  const OrderStatusCardView({required this.order, Key? key}) : super(key: key);
+  const OrderStatusCardView({required this.order, super.key});
 
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<MainBloc>();
     return Mutation(
-        options:
-            MutationOptions(document: UPDATE_ORDER_STATUS_MUTATION_DOCUMENT),
-        builder: (RunMutation runMutation, QueryResult? result) {
-          if (order.status == OrderStatus.waitingForPostPay) {
-            return OrderInvoiceView(
-                order: order,
-                onCashPaymentReceived: () {
-                  updateCurrentOrderStatus(
-                      bloc, runMutation, OrderStatus.finished,
-                      cashPayment: (order.costAfterCoupon +
-                          order.tipAmount -
-                          order.paidAmount));
-                });
-          }
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
+      options: MutationOptions(document: UPDATE_ORDER_STATUS_MUTATION_DOCUMENT),
+      builder: (RunMutation runMutation, QueryResult? result) {
+        if (order.status == OrderStatus.waitingForPostPay) {
+          return OrderInvoiceView(
+            order: order,
+            onCashPaymentReceived: () {
+              updateCurrentOrderStatus(
+                bloc,
+                runMutation,
+                OrderStatus.finished,
+                cashPayment:
+                    (order.costAfterCoupon +
+                    order.tipAmount -
+                    order.paidAmount),
+              );
+            },
+          );
+        }
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Spacer(),
+                FloatingActionButton.extended(
+                  heroTag: 'navigateFab',
+                  onPressed: () => openMapsSheet(context, order),
+                  elevation: 0,
+                  label: Text(
+                    S.of(context).order_status_action_navigate,
+                    style: Theme.of(context).textTheme.titleMedium
+                        ?.copyWith(color: Colors.white),
+                  ),
+                  icon: const Icon(Ionicons.navigate),
+                ),
+              ],
+            ).pSymmetric(v: 12, h: 16),
+            RidySheetView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Spacer(),
-                  FloatingActionButton.extended(
-                      heroTag: 'navigateFab',
-                      onPressed: () => openMapsSheet(context, order),
-                      elevation: 0,
-                      label: Text(
-                        S.of(context).order_status_action_navigate,
-                        style: Theme.of(context)
-                            .textTheme
-                            .titleMedium
-                            ?.copyWith(color: Colors.white),
+                  SheetTitleView(
+                    title: getTitleForStatus(context, order.status),
+                  ),
+                  Row(
+                    children: [
+                      UserAvatarView(
+                        urlPrefix: serverUrl,
+                        url: order.rider.media?.address,
+                        cornerRadius: 40,
+                        size: 35,
                       ),
-                      icon: const Icon(Ionicons.navigate)),
-                ],
-              ).pSymmetric(v: 12, h: 16),
-              RidySheetView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SheetTitleView(
-                        title: getTitleForStatus(context, order.status)),
-                    Row(
-                      children: [
-                        UserAvatarView(
-                            urlPrefix: serverUrl,
-                            url: order.rider.media?.address,
-                            cornerRadius: 40,
-                            size: 35),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "${order.rider.firstName ?? "-"} ${order.rider.lastName ?? "-"}",
-                                  style:
-                                      Theme.of(context).textTheme.titleMedium,
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "${order.rider.firstName ?? "-"} ${order.rider.lastName ?? "-"}",
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              if (order.status == OrderStatus.driverAccepted)
+                                Timeago(
+                                  builder: (context, text) {
+                                    return Text(
+                                      (order.etaPickup?.isBefore(
+                                                DateTime.now(),
+                                              ) ??
+                                              false)
+                                          ? S
+                                                .of(context)
+                                                .rider_expected_time_past(
+                                                  order.etaPickup
+                                                          ?.difference(
+                                                            DateTime.now(),
+                                                          )
+                                                          .inMinutes ??
+                                                      0,
+                                                )
+                                          : S
+                                                .of(context)
+                                                .rider_expected_time_future(
+                                                  order.etaPickup
+                                                          ?.difference(
+                                                            DateTime.now(),
+                                                          )
+                                                          .inMinutes ??
+                                                      0,
+                                                ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelSmall,
+                                    );
+                                  },
+                                  date: order.etaPickup ?? DateTime.now(),
                                 ),
-                                if (order.status == OrderStatus.driverAccepted)
-                                  Timeago(
-                                      builder: (context, text) {
-                                        return Text(
-                                          (order.etaPickup?.isBefore(
-                                                      DateTime.now()) ??
-                                                  false)
-                                              ? S
-                                                  .of(context)
-                                                  .rider_expected_time_past(
-                                                      order
-                                                              .etaPickup
-                                                              ?.difference(
-                                                                  DateTime
-                                                                      .now())
-                                                              .inMinutes ??
-                                                          0)
-                                              : S
-                                                  .of(context)
-                                                  .rider_expected_time_future(
-                                                      order.etaPickup
-                                                              ?.difference(
-                                                                  DateTime
-                                                                      .now())
-                                                              .inMinutes ??
-                                                          0),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .labelSmall,
-                                        );
-                                      },
-                                      date: order.etaPickup ?? DateTime.now()),
-                                if (order.status == OrderStatus.started ||
-                                    order.status == OrderStatus.arrived)
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        order.paidAmount < order.costAfterCoupon
-                                            ? Ionicons.close_circle
-                                            : Ionicons.checkmark_circle,
-                                        size: 14,
-                                        color: order.paidAmount <
-                                                order.costAfterCoupon
-                                            ? const Color(0xffb20d0e)
-                                            : const Color(0xff108910),
-                                      ),
-                                      const SizedBox(width: 2),
-                                      Text(
-                                        order.paidAmount < order.costAfterCoupon
-                                            ? S
+                              if (order.status == OrderStatus.started ||
+                                  order.status == OrderStatus.arrived)
+                                Row(
+                                  children: [
+                                    Icon(
+                                      order.paidAmount < order.costAfterCoupon
+                                          ? Ionicons.close_circle
+                                          : Ionicons.checkmark_circle,
+                                      size: 14,
+                                      color:
+                                          order.paidAmount <
+                                              order.costAfterCoupon
+                                          ? const Color(0xffb20d0e)
+                                          : const Color(0xff108910),
+                                    ),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      order.paidAmount < order.costAfterCoupon
+                                          ? S
                                                 .of(context)
                                                 .order_payment_status_unpaid
-                                            : S
+                                          : S
                                                 .of(context)
                                                 .order_payment_status_paid,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .labelMedium
-                                            ?.copyWith(
-                                                color: order.paidAmount <
-                                                        order.costAfterCoupon
-                                                    ? const Color(0xffb20d0e)
-                                                    : const Color(0xff108910)),
-                                      )
-                                    ],
-                                  ),
-                              ],
-                            ),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .labelMedium
+                                          ?.copyWith(
+                                            color:
+                                                order.paidAmount <
+                                                    order.costAfterCoupon
+                                                ? const Color(0xffb20d0e)
+                                                : const Color(0xff108910),
+                                          ),
+                                    ),
+                                  ],
+                                ),
+                            ],
                           ),
                         ),
-                        if (order.status == OrderStatus.driverAccepted ||
-                            order.status == OrderStatus.arrived)
-                          RoundedButton(
-                              icon: Ionicons.call,
-                              onPressed: () {
-                                _launchUrl(context,
-                                    "tel://+${order.rider.mobileNumber}");
-                              }),
-                        const SizedBox(width: 8),
-                        if (order.status == OrderStatus.driverAccepted ||
-                            order.status == OrderStatus.arrived)
-                          RoundedButton(
-                              icon: Ionicons.mail,
-                              onPressed: () {
-                                Navigator.pushNamed(context, 'chat');
-                              }),
+                      ),
+                      if (order.status == OrderStatus.driverAccepted ||
+                          order.status == OrderStatus.arrived)
+                        RoundedButton(
+                          icon: Ionicons.call,
+                          onPressed: () {
+                            _launchUrl(
+                              context,
+                              "tel://+${order.rider.mobileNumber}",
+                            );
+                          },
+                        ),
+                      const SizedBox(width: 8),
+                      if (order.status == OrderStatus.driverAccepted ||
+                          order.status == OrderStatus.arrived)
+                        RoundedButton(
+                          icon: Ionicons.mail,
+                          onPressed: () {
+                            Navigator.pushNamed(context, 'chat');
+                          },
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  if (order.status == OrderStatus.driverAccepted ||
+                      order.options.isNotEmpty)
+                    const Divider(),
+                  if (order.status == OrderStatus.driverAccepted)
+                    Row(
+                      children: [
+                        LightColoredButton(
+                          icon: Ionicons.list,
+                          text: S.of(context).action_ride_options,
+                          onPressed: () async {
+                            final result =
+                                await showModalBottomSheet<RideOptionsResult>(
+                                  context: context,
+                                  builder: (context) {
+                                    return const RideOptionsSheetView();
+                                  },
+                                );
+                            switch (result) {
+                              case RideOptionsResult.cancel:
+                                updateCurrentOrderStatus(
+                                  bloc,
+                                  runMutation,
+                                  OrderStatus.driverCanceled,
+                                );
+                                break;
+
+                              case RideOptionsResult.none:
+                              case null:
+                                break;
+                            }
+                          },
+                        ),
+                        const Spacer(),
+                        if (order.options.isNotEmpty)
+                          LightColoredButton(
+                            icon: Ionicons.options,
+                            text: S.of(context).action_ride_preferences,
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (context) {
+                                  return RiderPreferencesSheetView(
+                                    options: order.options,
+                                  );
+                                },
+                              );
+                            },
+                          ),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    if (order.status == OrderStatus.driverAccepted ||
-                        order.options.isNotEmpty)
-                      const Divider(),
-                    if (order.status == OrderStatus.driverAccepted)
-                      Row(
-                        children: [
-                          LightColoredButton(
-                              icon: Ionicons.list,
-                              text: S.of(context).action_ride_options,
-                              onPressed: () async {
-                                final result = await showModalBottomSheet<
-                                        RideOptionsResult>(
-                                    context: context,
-                                    builder: (context) {
-                                      return const RideOptionsSheetView();
-                                    });
-                                switch (result) {
-                                  case RideOptionsResult.cancel:
-                                    updateCurrentOrderStatus(bloc, runMutation,
-                                        OrderStatus.driverCanceled);
-                                    break;
-
-                                  case RideOptionsResult.none:
-                                  case null:
-                                    break;
-                                }
-                              }),
-                          const Spacer(),
-                          if (order.options.isNotEmpty)
-                            LightColoredButton(
-                                icon: Ionicons.options,
-                                text: S.of(context).action_ride_preferences,
-                                onPressed: () {
-                                  showModalBottomSheet(
-                                      context: context,
-                                      builder: (context) {
-                                        return RiderPreferencesSheetView(
-                                          options: order.options,
-                                        );
-                                      });
-                                }),
-                        ],
+                  const SizedBox(height: 12),
+                  if (order.status == OrderStatus.driverAccepted)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (result?.isLoading ?? false)
+                            ? null
+                            : () => updateCurrentOrderStatus(
+                                bloc,
+                                runMutation,
+                                OrderStatus.arrived,
+                              ),
+                        child: Text(S.of(context).order_status_action_arrived),
                       ),
-                    const SizedBox(height: 12),
-                    if (order.status == OrderStatus.driverAccepted)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                            onPressed: (result?.isLoading ?? false)
-                                ? null
-                                : () => updateCurrentOrderStatus(
-                                    bloc, runMutation, OrderStatus.arrived),
-                            child: Text(
-                                S.of(context).order_status_action_arrived)),
+                    ),
+                  if (order.status == OrderStatus.arrived)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (result?.isLoading ?? false)
+                            ? null
+                            : () => updateCurrentOrderStatus(
+                                bloc,
+                                runMutation,
+                                OrderStatus.started,
+                              ),
+                        child: Text(S.of(context).order_status_action_start),
                       ),
-                    if (order.status == OrderStatus.arrived)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                            onPressed: (result?.isLoading ?? false)
-                                ? null
-                                : () => updateCurrentOrderStatus(
-                                    bloc, runMutation, OrderStatus.started),
-                            child:
-                                Text(S.of(context).order_status_action_start)),
+                    ),
+                  if (order.status == OrderStatus.started)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: (result?.isLoading ?? false)
+                            ? null
+                            : () => updateCurrentOrderStatus(
+                                bloc,
+                                runMutation,
+                                OrderStatus.finished,
+                              ),
+                        child: Text(S.of(context).order_status_action_finished),
                       ),
-                    if (order.status == OrderStatus.started)
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                            onPressed: (result?.isLoading ?? false)
-                                ? null
-                                : () => updateCurrentOrderStatus(
-                                    bloc, runMutation, OrderStatus.finished),
-                            child: Text(
-                                S.of(context).order_status_action_finished)),
-                      )
-                  ],
-                ).px4(),
-              ),
-            ],
-          );
-        });
+                    ),
+                ],
+              ).px4(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> openMapsSheet(context, CurrentOrderMixin order) async {
@@ -290,10 +324,8 @@ class OrderStatusCardView extends StatelessWidget {
                   children: <Widget>[
                     for (var map in availableMaps)
                       ListTile(
-                        onTap: () => map.showMarker(
-                          coords: coords,
-                          title: title,
-                        ),
+                        onTap: () =>
+                            map.showMarker(coords: coords, title: title),
                         title: Text(map.mapName),
                         leading: SvgPicture.asset(
                           map.icon,
@@ -340,14 +372,18 @@ class OrderStatusCardView extends StatelessWidget {
   }
 
   Future<void> updateCurrentOrderStatus(
-      MainBloc bloc, RunMutation runMutation, OrderStatus orderStatus,
-      {double? cashPayment}) async {
-    final result = await runMutation(UpdateOrderStatusArguments(
-                orderId: order.id,
-                status: orderStatus,
-                cashPayment: cashPayment ?? 0)
-            .toJson())
-        .networkResult;
+    MainBloc bloc,
+    RunMutation runMutation,
+    OrderStatus orderStatus, {
+    double? cashPayment,
+  }) async {
+    final result = await runMutation(
+      UpdateOrderStatusArguments(
+        orderId: order.id,
+        status: orderStatus,
+        cashPayment: cashPayment ?? 0,
+      ).toJson(),
+    ).networkResult;
     bloc.add(CurrentOrderUpdated(result!.data!['updateOneOrder']));
   }
 }

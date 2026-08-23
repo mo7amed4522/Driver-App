@@ -10,12 +10,12 @@ class RegisterPayoutDetailsView extends StatelessWidget {
   final GetDriver$Query$Driver driver;
   final Function(bool loading) onLoadingStateUpdated;
 
-  RegisterPayoutDetailsView(
-      {Key? key,
-      required this.driver,
-      required this.onContinue,
-      required this.onLoadingStateUpdated})
-      : super(key: key);
+  RegisterPayoutDetailsView({
+    super.key,
+    required this.driver,
+    required this.onContinue,
+    required this.onLoadingStateUpdated,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -26,72 +26,81 @@ class RegisterPayoutDetailsView extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      S.of(context).register_payout_details_title,
-                      style: Theme.of(context).textTheme.titleLarge,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    S.of(context).register_payout_details_title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 24),
+                  TextFormField(
+                    initialValue: driver.bankName,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: S.of(context).bank_name,
                     ),
-                    const SizedBox(height: 24),
-                    TextFormField(
-                      initialValue: driver.bankName,
-                      decoration: InputDecoration(
-                          isDense: true, labelText: S.of(context).bank_name),
-                      onChanged: (value) => driver.bankName = value,
+                    onChanged: (value) => driver.bankName = value,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    initialValue: driver.accountNumber,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: S.of(context).account_number,
                     ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: driver.accountNumber,
-                      decoration: InputDecoration(
-                          isDense: true,
-                          labelText: S.of(context).account_number),
-                      onChanged: (value) => driver.accountNumber = value,
+                    onChanged: (value) => driver.accountNumber = value,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    initialValue: driver.accountNumber,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: S.of(context).bank_swift,
                     ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: driver.accountNumber,
-                      decoration: InputDecoration(
-                          isDense: true, labelText: S.of(context).bank_swift),
-                      onChanged: (value) => driver.bankSwift = value,
+                    onChanged: (value) => driver.bankSwift = value,
+                  ),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    initialValue: driver.bankRoutingNumber,
+                    decoration: InputDecoration(
+                      isDense: true,
+                      labelText: S.of(context).bankRoutingNumber,
                     ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      initialValue: driver.bankRoutingNumber,
-                      decoration: InputDecoration(
-                          isDense: true,
-                          labelText: S.of(context).bankRoutingNumber),
-                      onChanged: (value) => driver.bankRoutingNumber = value,
-                    ),
-                  ]),
+                    onChanged: (value) => driver.bankRoutingNumber = value,
+                  ),
+                ],
+              ),
             ),
           ),
           Mutation(
-              options: MutationOptions(
-                  document: UPDATE_PROFILE_MUTATION_DOCUMENT,
-                  fetchPolicy: FetchPolicy.noCache),
-              builder: (RunMutation runMutation, QueryResult? result) {
-                return SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      bool? isValid = _formKey.currentState?.validate();
-                      if (isValid != true) return;
-                      onLoadingStateUpdated(true);
-                      await runMutation({
-                        "input": {
-                          "bankName": driver.bankName,
-                          "bankSwift": driver.bankSwift,
-                          "bankRoutingNumber": driver.bankRoutingNumber,
-                          "accountNumber": driver.accountNumber
-                        }
-                      }).networkResult;
-                      onLoadingStateUpdated(false);
-                      onContinue();
-                    },
-                    child: Text(S.of(context).action_continue),
-                  ),
-                );
-              })
+            options: MutationOptions(
+              document: UPDATE_PROFILE_MUTATION_DOCUMENT,
+              fetchPolicy: FetchPolicy.noCache,
+            ),
+            builder: (RunMutation runMutation, QueryResult? result) {
+              return SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    bool? isValid = _formKey.currentState?.validate();
+                    if (isValid != true) return;
+                    onLoadingStateUpdated(true);
+                    await runMutation({
+                      "input": {
+                        "bankName": driver.bankName,
+                        "bankSwift": driver.bankSwift,
+                        "bankRoutingNumber": driver.bankRoutingNumber,
+                        "accountNumber": driver.accountNumber,
+                      },
+                    }).networkResult;
+                    onLoadingStateUpdated(false);
+                    onContinue();
+                  },
+                  child: Text(S.of(context).action_continue),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

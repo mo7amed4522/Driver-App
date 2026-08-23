@@ -6,7 +6,7 @@ import 'generated/l10n.dart';
 class QueryResultView extends StatelessWidget {
   final QueryResult queryResult;
 
-  const QueryResultView(this.queryResult, {Key? key}) : super(key: key);
+  const QueryResultView(this.queryResult, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,30 +14,29 @@ class QueryResultView extends StatelessWidget {
       return const QueryResultLoadingView();
     }
     if (queryResult.hasException) {
-      return Center(
-        child: Text(queryResult.exception.toString()),
-      );
+      return Center(child: Text(queryResult.exception.toString()));
     }
     return Container();
   }
 }
 
 class QueryResultLoadingView extends StatelessWidget {
-  const QueryResultLoadingView({Key? key}) : super(key: key);
+  const QueryResultLoadingView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Center(
-        child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const CircularProgressIndicator.adaptive(),
-        const SizedBox(height: 8),
-        Text(
-          S.of(context).loading,
-          style: Theme.of(context).textTheme.bodySmall,
-        )
-      ],
-    ));
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const CircularProgressIndicator.adaptive(),
+          const SizedBox(height: 8),
+          Text(
+            S.of(context).loading,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
+    );
   }
 }

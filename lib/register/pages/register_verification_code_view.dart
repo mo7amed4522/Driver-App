@@ -13,13 +13,13 @@ class RegisterVerificationCodeView extends StatefulWidget {
   final Function() onLoggedIn;
   final Function(bool loading) onLoadingStateUpdated;
 
-  const RegisterVerificationCodeView(
-      {Key? key,
-      required this.verificationCodeId,
-      required this.phoneNumber,
-      required this.onLoggedIn,
-      required this.onLoadingStateUpdated})
-      : super(key: key);
+  const RegisterVerificationCodeView({
+    super.key,
+    required this.verificationCodeId,
+    required this.phoneNumber,
+    required this.onLoggedIn,
+    required this.onLoadingStateUpdated,
+  });
 
   @override
   State<RegisterVerificationCodeView> createState() =>
@@ -52,35 +52,37 @@ class _RegisterVerificationCodeViewState
         ),
         const SizedBox(height: 24),
         Mutation(
-            options: MutationOptions(document: LOGIN_MUTATION_DOCUMENT),
-            builder: (RunMutation runMutation, QueryResult? result) {
-              return Pinput(
-                focusNode: focusNode,
-                length: 6,
-                onCompleted: (value) async {
-                  widget.onLoadingStateUpdated(true);
-                  final PhoneAuthCredential credential =
-                      PhoneAuthProvider.credential(
-                          verificationId: widget.verificationCodeId,
-                          smsCode: value);
-                  final UserCredential cr = await FirebaseAuth.instance
-                      .signInWithCredential(credential);
-                  final String? token = await cr.user!.getIdToken();
-                  if (token == null) {
-                    throw Exception('Failed to get Firebase token');
-                  }
-                  final String firebaseToken = token;
-                  final args =
-                      LoginArguments(firebaseToken: firebaseToken).toJson();
-                  final netResult = await runMutation(args).networkResult;
-                  final loginRes = Login$Mutation.fromJson(netResult!.data!);
-                  final jwt = loginRes.login.jwtToken;
-                  Hive.box('user').put('jwt', jwt);
-                  widget.onLoadingStateUpdated(false);
-                  widget.onLoggedIn();
-                },
-              );
-            }),
+          options: MutationOptions(document: LOGIN_MUTATION_DOCUMENT),
+          builder: (RunMutation runMutation, QueryResult? result) {
+            return Pinput(
+              focusNode: focusNode,
+              length: 6,
+              onCompleted: (value) async {
+                widget.onLoadingStateUpdated(true);
+                final PhoneAuthCredential credential =
+                    PhoneAuthProvider.credential(
+                      verificationId: widget.verificationCodeId,
+                      smsCode: value,
+                    );
+                final UserCredential cr = await FirebaseAuth.instance
+                    .signInWithCredential(credential);
+                final String? token = await cr.user!.getIdToken();
+                if (token == null) {
+                  throw Exception('Failed to get Firebase token');
+                }
+                final String firebaseToken = token;
+                final args = LoginArguments(firebaseToken: firebaseToken)
+                    .toJson();
+                final netResult = await runMutation(args).networkResult;
+                final loginRes = Login$Mutation.fromJson(netResult!.data!);
+                final jwt = loginRes.login.jwtToken;
+                Hive.box('user').put('jwt', jwt);
+                widget.onLoadingStateUpdated(false);
+                widget.onLoggedIn();
+              },
+            );
+          },
+        ),
         const Spacer(),
       ],
     );

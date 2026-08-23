@@ -5,6 +5,7 @@ import 'package:ridy/client/theme/theme.dart';
 
 import 'generated/l10n.dart';
 import 'graphql/generated/graphql_api.dart';
+
 import 'package:flutter/material.dart';
 import 'package:velocity_x/velocity_x.dart';
 
@@ -12,9 +13,11 @@ class UnregisteredDriverMessagesView extends StatelessWidget {
   final BasicProfileMixin? driver;
   final Refetch? refetch;
 
-  const UnregisteredDriverMessagesView(
-      {required this.driver, required this.refetch, Key? key})
-      : super(key: key);
+  const UnregisteredDriverMessagesView({
+    required this.driver,
+    required this.refetch,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,82 +27,84 @@ class UnregisteredDriverMessagesView extends StatelessWidget {
         direction: Axis.vertical,
         children: [
           Flexible(
-              flex: 2,
-              child: Container(
-                decoration: BoxDecoration(
-                    color: CustomTheme.primaryColors.shade200,
-                    borderRadius: const BorderRadius.only(
-                        bottomRight: Radius.circular(70))),
-                child: SafeArea(
-                  minimum: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Row(
-                        children: [
-                          const Spacer(),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: Image.asset(
-                              "images/logo.png",
-                              width: 32,
-                              height: 32,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            packageInfo.data?.appName ?? "",
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          const Spacer(),
-                        ],
-                      ),
-                      const Spacer(),
-                      Image.asset(
-                        'images/registration-illustration.png',
-                        width: 300,
-                        height: 300,
-                      ),
-                      const Spacer()
-                    ],
-                  ),
-                ),
-              )),
-          Flexible(
-              child: Stack(
-            children: [
-              Positioned(
-                left: -70,
-                right: -70,
-                top: 30,
-                child: Image.asset(
-                  'images/dotted-lines-1.png',
+            flex: 2,
+            child: Container(
+              decoration: BoxDecoration(
+                color: CustomTheme.primaryColors.shade200,
+                borderRadius: const BorderRadius.only(
+                  bottomRight: Radius.circular(70),
                 ),
               ),
-              if (driver == null)
-                Center(
-                  child: NotLoggedInUnregisteredView(refetch: refetch),
+              child: SafeArea(
+                minimum: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Row(
+                      children: [
+                        const Spacer(),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.asset(
+                            "images/logo.png",
+                            width: 32,
+                            height: 32,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          packageInfo.data?.appName ?? "",
+                          style: Theme.of(context).textTheme.headlineMedium,
+                        ),
+                        const Spacer(),
+                      ],
+                    ),
+                    const Spacer(),
+                    Image.asset(
+                      'images/registration-illustration.png',
+                      width: 300,
+                      height: 300,
+                    ),
+                    const Spacer(),
+                  ],
                 ),
-              if (driver?.status == DriverStatus.waitingDocuments)
-                Center(
-                  child: WaitingToCompleteSubmissionUnregisteredView(
-                      refetch: refetch),
+              ),
+            ),
+          ),
+          Flexible(
+            child: Stack(
+              children: [
+                Positioned(
+                  left: -70,
+                  right: -70,
+                  top: 30,
+                  child: Image.asset('images/dotted-lines-1.png'),
                 ),
-              if (driver?.status == DriverStatus.pendingApproval)
-                Center(
+                if (driver == null)
+                  Center(child: NotLoggedInUnregisteredView(refetch: refetch)),
+                if (driver?.status == DriverStatus.waitingDocuments)
+                  Center(
+                    child: WaitingToCompleteSubmissionUnregisteredView(
+                      refetch: refetch,
+                    ),
+                  ),
+                if (driver?.status == DriverStatus.pendingApproval)
+                  Center(
                     child: RegistrationSubmittedUnregisteredView(
-                        refetch: refetch)),
-              if (driver?.status == DriverStatus.softReject)
-                Center(
-                  child: SoftRejectUnregisteredView(
-                      rejectionNote: driver?.softRejectionNote),
-                ),
-              if (driver?.status == DriverStatus.hardReject)
-                const Center(
-                  child: HardRejectUnregisteredView(),
-                )
-            ],
-          ))
+                      refetch: refetch,
+                    ),
+                  ),
+                if (driver?.status == DriverStatus.softReject)
+                  Center(
+                    child: SoftRejectUnregisteredView(
+                      rejectionNote: driver?.softRejectionNote,
+                    ),
+                  ),
+                if (driver?.status == DriverStatus.hardReject)
+                  const Center(child: HardRejectUnregisteredView()),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -109,8 +114,7 @@ class UnregisteredDriverMessagesView extends StatelessWidget {
 class NotLoggedInUnregisteredView extends StatelessWidget {
   final Refetch? refetch;
 
-  const NotLoggedInUnregisteredView({Key? key, required this.refetch})
-      : super(key: key);
+  const NotLoggedInUnregisteredView({super.key, required this.refetch});
 
   @override
   Widget build(BuildContext context) {
@@ -125,11 +129,12 @@ class NotLoggedInUnregisteredView extends StatelessWidget {
         SizedBox(
           width: 300,
           child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, 'register');
-              },
-              child: Text(S.of(context).action_login_signup)),
-        )
+            onPressed: () {
+              Navigator.pushNamed(context, 'register');
+            },
+            child: Text(S.of(context).action_login_signup),
+          ),
+        ),
       ],
     );
   }
@@ -138,9 +143,10 @@ class NotLoggedInUnregisteredView extends StatelessWidget {
 class WaitingToCompleteSubmissionUnregisteredView extends StatelessWidget {
   final Refetch? refetch;
 
-  const WaitingToCompleteSubmissionUnregisteredView(
-      {Key? key, required this.refetch})
-      : super(key: key);
+  const WaitingToCompleteSubmissionUnregisteredView({
+    super.key,
+    required this.refetch,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -150,8 +156,9 @@ class WaitingToCompleteSubmissionUnregisteredView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           decoration: BoxDecoration(
-              color: CustomTheme.neutralColors.shade200,
-              borderRadius: BorderRadius.circular(12)),
+            color: CustomTheme.neutralColors.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Column(
             children: [
               Text(
@@ -162,11 +169,9 @@ class WaitingToCompleteSubmissionUnregisteredView extends StatelessWidget {
               Text(
                 S.of(context).incomplete_registration_description,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
+                style: Theme.of(context).textTheme.bodySmall
                     ?.copyWith(color: CustomTheme.neutralColors.shade600),
-              )
+              ),
             ],
           ),
         ),
@@ -174,11 +179,12 @@ class WaitingToCompleteSubmissionUnregisteredView extends StatelessWidget {
         SizedBox(
           width: 300,
           child: OutlinedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, 'register');
-              },
-              child: Text(S.of(context).action_complete_registration)),
-        )
+            onPressed: () {
+              Navigator.pushNamed(context, 'register');
+            },
+            child: Text(S.of(context).action_complete_registration),
+          ),
+        ),
       ],
     );
   }
@@ -187,8 +193,10 @@ class WaitingToCompleteSubmissionUnregisteredView extends StatelessWidget {
 class RegistrationSubmittedUnregisteredView extends StatelessWidget {
   final Refetch? refetch;
 
-  const RegistrationSubmittedUnregisteredView({Key? key, required this.refetch})
-      : super(key: key);
+  const RegistrationSubmittedUnregisteredView({
+    super.key,
+    required this.refetch,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -198,8 +206,9 @@ class RegistrationSubmittedUnregisteredView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           decoration: BoxDecoration(
-              color: CustomTheme.neutralColors.shade200,
-              borderRadius: BorderRadius.circular(12)),
+            color: CustomTheme.neutralColors.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Column(
             children: [
               Text(
@@ -210,11 +219,9 @@ class RegistrationSubmittedUnregisteredView extends StatelessWidget {
               Text(
                 S.of(context).pending_review_registration_description,
                 textAlign: TextAlign.center,
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
+                style: Theme.of(context).textTheme.bodySmall
                     ?.copyWith(color: CustomTheme.neutralColors.shade600),
-              )
+              ),
             ],
           ),
         ),
@@ -222,18 +229,19 @@ class RegistrationSubmittedUnregisteredView extends StatelessWidget {
         SizedBox(
           width: 300,
           child: OutlinedButton(
-              onPressed: () async {
-                await Navigator.pushNamed(context, 'register');
-              },
-              child: Text(S.of(context).action_edit_submission)),
-        )
+            onPressed: () async {
+              await Navigator.pushNamed(context, 'register');
+            },
+            child: Text(S.of(context).action_edit_submission),
+          ),
+        ),
       ],
     );
   }
 }
 
 class HardRejectUnregisteredView extends StatelessWidget {
-  const HardRejectUnregisteredView({Key? key}) : super(key: key);
+  const HardRejectUnregisteredView({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -243,8 +251,9 @@ class HardRejectUnregisteredView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           decoration: BoxDecoration(
-              color: CustomTheme.neutralColors.shade200,
-              borderRadius: BorderRadius.circular(12)),
+            color: CustomTheme.neutralColors.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Column(
             children: [
               Text(
@@ -265,13 +274,11 @@ class HardRejectUnregisteredView extends StatelessWidget {
                   Text(
                     S.of(context).hard_reject_registration,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
+                    style: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: const Color(0xffb20d0e)),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         ),
@@ -282,8 +289,7 @@ class HardRejectUnregisteredView extends StatelessWidget {
 
 class SoftRejectUnregisteredView extends StatelessWidget {
   final String? rejectionNote;
-  const SoftRejectUnregisteredView({required this.rejectionNote, Key? key})
-      : super(key: key);
+  const SoftRejectUnregisteredView({required this.rejectionNote, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -293,8 +299,9 @@ class SoftRejectUnregisteredView extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
           decoration: BoxDecoration(
-              color: CustomTheme.neutralColors.shade200,
-              borderRadius: BorderRadius.circular(12)),
+            color: CustomTheme.neutralColors.shade200,
+            borderRadius: BorderRadius.circular(12),
+          ),
           child: Column(
             children: [
               Text(
@@ -315,9 +322,7 @@ class SoftRejectUnregisteredView extends StatelessWidget {
                   Text(
                     S.of(context).soft_rejection_description,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context)
-                        .textTheme
-                        .bodySmall
+                    style: Theme.of(context).textTheme.bodySmall
                         ?.copyWith(color: const Color(0xffb20d0e)),
                   ),
                 ],
@@ -326,11 +331,9 @@ class SoftRejectUnregisteredView extends StatelessWidget {
                 Text(
                   rejectionNote ?? "",
                   textAlign: TextAlign.center,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
+                  style: Theme.of(context).textTheme.bodySmall
                       ?.copyWith(color: const Color(0xffb20d0e)),
-                )
+                ),
             ],
           ),
         ),
@@ -338,14 +341,15 @@ class SoftRejectUnregisteredView extends StatelessWidget {
         SizedBox(
           width: 300,
           child: OutlinedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, 'register');
-              },
-              child: Text(
-                S.of(context).action_edit_submission,
-                style: const TextStyle(color: Color(0xffb20d0e)),
-              )),
-        )
+            onPressed: () {
+              Navigator.pushNamed(context, 'register');
+            },
+            child: Text(
+              S.of(context).action_edit_submission,
+              style: const TextStyle(color: Color(0xffb20d0e)),
+            ),
+          ),
+        ),
       ],
     );
   }

@@ -18,13 +18,13 @@ class RegisterPhoneNumberView extends StatefulWidget {
   final Function() onLoggedIn;
   final Function(bool loading) onLoadingStateUpdated;
 
-  const RegisterPhoneNumberView(
-      {Key? key,
-      this.driver,
-      required this.onCodeSent,
-      required this.onLoggedIn,
-      required this.onLoadingStateUpdated})
-      : super(key: key);
+  const RegisterPhoneNumberView({
+    super.key,
+    this.driver,
+    required this.onCodeSent,
+    required this.onLoggedIn,
+    required this.onLoadingStateUpdated,
+  });
 
   @override
   State<RegisterPhoneNumberView> createState() =>
@@ -51,42 +51,47 @@ class _RegisterPhoneNumberViewState extends State<RegisterPhoneNumberView> {
           style: Theme.of(context).textTheme.labelMedium,
         ),
         const SizedBox(height: 24),
-        Row(children: [
-          Container(
-            decoration: BoxDecoration(
+        Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
                 color: CustomTheme.neutralColors.shade200,
-                borderRadius: BorderRadius.circular(10)),
-            child: CountryCodePicker(
-              boxDecoration: BoxDecoration(
-                  color: CustomTheme.neutralColors.shade100,
-                  borderRadius: BorderRadius.circular(10)),
-              initialSelection: countryCode,
-              onChanged: (value) => countryCode = value.dialCode ?? countryCode,
-            ),
-          ),
-          const SizedBox(width: 5),
-          Flexible(
-            child: TextFormField(
-              initialValue: phoneNumber,
-              onChanged: (value) => phoneNumber = value,
-              keyboardType: TextInputType.phone,
-              inputFormatters: <TextInputFormatter>[
-                FilteringTextInputFormatter.digitsOnly
-              ],
-              decoration: InputDecoration(
-                isDense: true,
-                labelText: S.of(context).cell_number,
+                borderRadius: BorderRadius.circular(10),
               ),
-              validator: (String? value) {
-                if (value == null || value.isEmpty) {
-                  return S.of(context).phone_number_empty;
-                } else {
-                  return null;
-                }
-              },
+              child: CountryCodePicker(
+                boxDecoration: BoxDecoration(
+                  color: CustomTheme.neutralColors.shade100,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                initialSelection: countryCode,
+                onChanged: (value) =>
+                    countryCode = value.dialCode ?? countryCode,
+              ),
             ),
-          ),
-        ]),
+            const SizedBox(width: 5),
+            Flexible(
+              child: TextFormField(
+                initialValue: phoneNumber,
+                onChanged: (value) => phoneNumber = value,
+                keyboardType: TextInputType.phone,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
+                decoration: InputDecoration(
+                  isDense: true,
+                  labelText: S.of(context).cell_number,
+                ),
+                validator: (String? value) {
+                  if (value == null || value.isEmpty) {
+                    return S.of(context).phone_number_empty;
+                  } else {
+                    return null;
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
         if (loginTermsAndConditionsUrl.isNotEmpty)
           RegistrationPhoneNumberTermsCheckbox(
             agreedToTerms: agreedToTerms,
@@ -94,83 +99,88 @@ class _RegisterPhoneNumberViewState extends State<RegisterPhoneNumberView> {
           ),
         const Spacer(),
         SizedBox(
-            width: double.infinity,
-            child: Mutation(
-              options: MutationOptions(document: LOGIN_MUTATION_DOCUMENT),
-              builder: (RunMutation runMutation, QueryResult? result) =>
-                  ElevatedButton(
-                      onPressed: () async {
-                        if (loginTermsAndConditionsUrl.isNotEmpty &&
-                            !agreedToTerms) {
-                          return;
-                        }
-                        if (phoneNumber.isEmpty) {
-                          return;
-                        }
-                        widget.onLoadingStateUpdated(true);
-                        if (kIsWeb) {
-                          final authResult = await FirebaseAuth.instance
-                              .signInWithPhoneNumber(phoneNumber);
-                          widget.onCodeSent(authResult.verificationId,
-                              countryCode + phoneNumber);
-                        } else {
-                          FirebaseAuth.instance.verifyPhoneNumber(
-                              phoneNumber: countryCode + phoneNumber,
-                              verificationCompleted: (PhoneAuthCredential
-                                  phoneAuthCredential) async {
-                                if (kDebugMode) {
-                                  print(
-                                      'Firebase Auth: verification completed');
-                                }
-                                final UserCredential cr = await FirebaseAuth
-                                    .instance
-                                    .signInWithCredential(phoneAuthCredential);
-                                final String? token =
-                                    await cr.user!.getIdToken();
-                                if (token == null) {
-                                  throw Exception(
-                                      'Failed to get Firebase token');
-                                }
-                                final String firebaseToken = token;
-                                final args =
-                                    LoginArguments(firebaseToken: firebaseToken)
-                                        .toJson();
-                                final netResult =
-                                    await runMutation(args).networkResult;
-                                final loginRes =
-                                    Login$Mutation.fromJson(netResult!.data!);
-                                final jwt = loginRes.login.jwtToken;
-                                Hive.box('user').put('jwt', jwt);
-                                widget.onLoadingStateUpdated(false);
-                                widget.onLoggedIn();
-                              },
-                              verificationFailed:
-                                  (FirebaseAuthException error) {
-                                if (kDebugMode) {
-                                  print('Firebase Auth: verification failed');
-                                }
-                                widget.onLoadingStateUpdated(false);
-                                final snackBar = SnackBar(
-                                    content: Text(error.message ??
-                                        S.of(context).message_unknown_error));
-                                ScaffoldMessenger.of(context)
-                                    .showSnackBar(snackBar);
-                              },
-                              codeSent: (String verificationId,
-                                  int? forceResendingToken) {
-                                if (kDebugMode) {
-                                  print('Firebase Auth: code sent');
-                                }
-                                widget.onLoadingStateUpdated(false);
-                                widget.onCodeSent(
-                                    verificationId, countryCode + phoneNumber);
-                              },
-                              codeAutoRetrievalTimeout:
-                                  (String verificationId) {});
-                        }
-                      },
-                      child: Text(S.of(context).action_continue)),
-            ))
+          width: double.infinity,
+          child: Mutation(
+            options: MutationOptions(document: LOGIN_MUTATION_DOCUMENT),
+            builder: (RunMutation runMutation, QueryResult? result) =>
+                ElevatedButton(
+                  onPressed: () async {
+                    if (loginTermsAndConditionsUrl.isNotEmpty &&
+                        !agreedToTerms) {
+                      return;
+                    }
+                    if (phoneNumber.isEmpty) {
+                      return;
+                    }
+                    widget.onLoadingStateUpdated(true);
+                    if (kIsWeb) {
+                      final authResult = await FirebaseAuth.instance
+                          .signInWithPhoneNumber(phoneNumber);
+                      widget.onCodeSent(
+                        authResult.verificationId,
+                        countryCode + phoneNumber,
+                      );
+                    } else {
+                      FirebaseAuth.instance.verifyPhoneNumber(
+                        phoneNumber: countryCode + phoneNumber,
+                        verificationCompleted:
+                            (PhoneAuthCredential phoneAuthCredential) async {
+                              if (kDebugMode) {
+                                print('Firebase Auth: verification completed');
+                              }
+                              final UserCredential cr = await FirebaseAuth
+                                  .instance
+                                  .signInWithCredential(phoneAuthCredential);
+                              final String? token = await cr.user!.getIdToken();
+                              if (token == null) {
+                                throw Exception('Failed to get Firebase token');
+                              }
+                              final String firebaseToken = token;
+                              final args = LoginArguments(
+                                firebaseToken: firebaseToken,
+                              ).toJson();
+                              final netResult = await runMutation(args)
+                                  .networkResult;
+                              final loginRes = Login$Mutation.fromJson(
+                                netResult!.data!,
+                              );
+                              final jwt = loginRes.login.jwtToken;
+                              Hive.box('user').put('jwt', jwt);
+                              widget.onLoadingStateUpdated(false);
+                              widget.onLoggedIn();
+                            },
+                        verificationFailed: (FirebaseAuthException error) {
+                          if (kDebugMode) {
+                            print('Firebase Auth: verification failed');
+                          }
+                          widget.onLoadingStateUpdated(false);
+                          final snackBar = SnackBar(
+                            content: Text(
+                              error.message ??
+                                  S.of(context).message_unknown_error,
+                            ),
+                          );
+                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                        },
+                        codeSent:
+                            (String verificationId, int? forceResendingToken) {
+                              if (kDebugMode) {
+                                print('Firebase Auth: code sent');
+                              }
+                              widget.onLoadingStateUpdated(false);
+                              widget.onCodeSent(
+                                verificationId,
+                                countryCode + phoneNumber,
+                              );
+                            },
+                        codeAutoRetrievalTimeout: (String verificationId) {},
+                      );
+                    }
+                  },
+                  child: Text(S.of(context).action_continue),
+                ),
+          ),
+        ),
       ],
     );
   }
@@ -180,30 +190,38 @@ class RegistrationPhoneNumberTermsCheckbox extends StatelessWidget {
   final bool agreedToTerms;
   final Function(bool value) onAgreedChanged;
 
-  const RegistrationPhoneNumberTermsCheckbox(
-      {Key? key, required this.agreedToTerms, required this.onAgreedChanged})
-      : super(key: key);
+  const RegistrationPhoneNumberTermsCheckbox({
+    super.key,
+    required this.agreedToTerms,
+    required this.onAgreedChanged,
+  });
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Checkbox(
-            value: agreedToTerms,
-            onChanged: (value) => onAgreedChanged(value ?? false)),
+          value: agreedToTerms,
+          onChanged: (value) => onAgreedChanged(value ?? false),
+        ),
         Flexible(
           child: RichText(
-              text: TextSpan(children: [
-            TextSpan(
-                style: const TextStyle(color: Colors.black),
-                text: S.of(context).terms_and_condition_first_part),
-            TextSpan(
-                style: const TextStyle(color: Colors.blue),
-                text: S.of(context).terms_and_conditions_clickable_part,
-                recognizer: TapGestureRecognizer()
-                  ..onTap = () {
-                    launchUrl(Uri.parse(loginTermsAndConditionsUrl));
-                  })
-          ])),
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  style: const TextStyle(color: Colors.black),
+                  text: S.of(context).terms_and_condition_first_part,
+                ),
+                TextSpan(
+                  style: const TextStyle(color: Colors.blue),
+                  text: S.of(context).terms_and_conditions_clickable_part,
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      launchUrl(Uri.parse(loginTermsAndConditionsUrl));
+                    },
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     );

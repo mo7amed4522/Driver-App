@@ -5,7 +5,7 @@ import 'package:ridy/client/theme/theme.dart';
 class RidyBackButton extends StatelessWidget {
   final String text;
 
-  const RidyBackButton({Key? key, required this.text}) : super(key: key);
+  const RidyBackButton({super.key, required this.text});
 
   @override
   Widget build(BuildContext context) {
@@ -13,22 +13,24 @@ class RidyBackButton extends StatelessWidget {
       onPressed: () => Navigator.pop(context),
       padding: const EdgeInsets.all(0),
       minimumSize: Size(0, 0),
-      child: Stack(children: [
-        Positioned(
-          left: -7,
-          child: Icon(
-            Ionicons.chevron_back,
-            color: CustomTheme.neutralColors.shade800,
+      child: Stack(
+        children: [
+          Positioned(
+            left: -7,
+            child: Icon(
+              Ionicons.chevron_back,
+              color: CustomTheme.neutralColors.shade800,
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 4, left: 16),
-          child: Text(
-            text,
-            style: TextStyle(color: CustomTheme.neutralColors.shade800),
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 16),
+            child: Text(
+              text,
+              style: TextStyle(color: CustomTheme.neutralColors.shade800),
+            ),
           ),
-        )
-      ]),
+        ],
+      ),
     );
   }
 }
