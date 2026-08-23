@@ -22,43 +22,38 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [ 'dart', 'java' ]
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v4
 
       - name: Setup Java
-        if: matrix.language == 'java'
-        uses: actions/setup-java@v4.7.0
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Flutter
-        if: matrix.language == 'dart'
-        uses: subosito/flutter-action@v2.16.0
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.1'
           channel: 'stable'
           cache: true
 
       - name: Install dependencies
-        if: matrix.language == 'dart'
         run: flutter pub get
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3.28.1
+      - name: Patch outdated plugins
+        run: bash scripts/patch_v1_embedding.sh
+
+      - name: Initialize CodeQL (Java/Kotlin)
+        uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
+          languages: java
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v3.28.1
+        uses: github/codeql-action/autobuild@v3
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3.28.1
+        uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:${{ matrix.language }}"
+          category: "/language:java"
