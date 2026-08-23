@@ -34,85 +34,81 @@ class _WalletViewState extends State<WalletView> {
         },
         child: Query(
           options: QueryOptions(document: WALLET_QUERY_DOCUMENT),
-          builder:
-              (QueryResult result, {Refetch? refetch, FetchMore? fetchMore}) {
-                this.refetch = refetch;
-                if (result.isLoading || result.hasException) {
-                  return QueryResultView(result);
-                }
-                final query = Wallet$Query.fromJson(result.data!);
-                final wallet = query.driverWallets;
-                final transactions = query.driverTransacions.edges;
-                if (wallet.isNotEmpty && selectedWalletIndex == null) {
-                  selectedWalletIndex = 0;
-                }
-                final walletItem = wallet.isEmpty
-                    ? null
-                    : wallet[selectedWalletIndex ?? 0];
-                return SafeArea(
-                  minimum: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      RidyBackButton(text: S.of(context).action_back),
-                      WalletCardView(
-                        title: S.of(context).wallet_card_title(appName),
-                        actionAddCreditText: S
-                            .of(context)
-                            .add_credit_dialog_title,
-                        currency: walletItem?.currency ?? defaultCurrency,
-                        credit: walletItem?.balance ?? 0,
-                        onAdddCredit: () {
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            constraints: const BoxConstraints(maxWidth: 600),
-                            builder: (context) {
-                              return AddCreditSheetView(
-                                currency:
-                                    walletItem?.currency ?? defaultCurrency,
-                              );
-                            },
+          builder: (QueryResult result,
+              {Refetch? refetch, FetchMore? fetchMore}) {
+            this.refetch = refetch;
+            if (result.isLoading || result.hasException) {
+              return QueryResultView(result);
+            }
+            final query = Wallet$Query.fromJson(result.data!);
+            final wallet = query.driverWallets;
+            final transactions = query.driverTransacions.edges;
+            if (wallet.isNotEmpty && selectedWalletIndex == null) {
+              selectedWalletIndex = 0;
+            }
+            final walletItem =
+                wallet.isEmpty ? null : wallet[selectedWalletIndex ?? 0];
+            return SafeArea(
+              minimum: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RidyBackButton(text: S.of(context).action_back),
+                  WalletCardView(
+                    title: S.of(context).wallet_card_title(appName),
+                    actionAddCreditText: S.of(context).add_credit_dialog_title,
+                    currency: walletItem?.currency ?? defaultCurrency,
+                    credit: walletItem?.balance ?? 0,
+                    onAdddCredit: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        constraints: const BoxConstraints(maxWidth: 600),
+                        builder: (context) {
+                          return AddCreditSheetView(
+                            currency: walletItem?.currency ?? defaultCurrency,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    S.of(context).wallet_activities_heading,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  if (transactions.isNotEmpty)
+                    Expanded(
+                      child: ListView.builder(
+                        itemCount: transactions.length,
+                        itemBuilder: (context, index) {
+                          final item = transactions[index].node;
+                          return WalletActivityItemView(
+                            title: item.action == TransactionAction.recharge
+                                ? getRechargeText(item.rechargeType!)
+                                : getDeductText(context, item.deductType!),
+                            dateTime: item.createdAt,
+                            amount: item.amount,
+                            currency: item.currency,
+                            icon: getTransactionIcon(item),
                           );
                         },
                       ),
-                      const SizedBox(height: 32),
-                      Text(
-                        S.of(context).wallet_activities_heading,
-                        style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                  if (transactions.isEmpty)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          S.of(context).wallet_empty_state_message,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      if (transactions.isNotEmpty)
-                        Expanded(
-                          child: ListView.builder(
-                            itemCount: transactions.length,
-                            itemBuilder: (context, index) {
-                              final item = transactions[index].node;
-                              return WalletActivityItemView(
-                                title: item.action == TransactionAction.recharge
-                                    ? getRechargeText(item.rechargeType!)
-                                    : getDeductText(context, item.deductType!),
-                                dateTime: item.createdAt,
-                                amount: item.amount,
-                                currency: item.currency,
-                                icon: getTransactionIcon(item),
-                              );
-                            },
-                          ),
-                        ),
-                      if (transactions.isEmpty)
-                        Expanded(
-                          child: Center(
-                            child: Text(
-                              S.of(context).wallet_empty_state_message,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-              },
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -158,7 +154,7 @@ class _WalletViewState extends State<WalletView> {
 
   IconData getTransactionIcon(
     Wallet$Query$DriverTransacionConnection$DriverTransacionEdge$DriverTransacion
-    transacion,
+        transacion,
   ) {
     if (transacion.action == TransactionAction.recharge) {
       switch (transacion.rechargeType) {

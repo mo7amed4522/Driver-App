@@ -25,8 +25,8 @@ class OpenStreetMapProvider extends StatelessWidget {
   MapController? mapController;
   final Stream<geo.Position> streamServerLocation =
       geo.Geolocator.getPositionStream(
-        locationSettings: const geo.LocationSettings(distanceFilter: 50),
-      );
+    locationSettings: const geo.LocationSettings(distanceFilter: 50),
+  );
   OpenStreetMapProvider({super.key});
 
   @override
@@ -38,8 +38,7 @@ class OpenStreetMapProvider extends StatelessWidget {
       options: MapOptions(
         maxZoom: 20,
         zoom: 12,
-        interactiveFlags:
-            InteractiveFlag.drag |
+        interactiveFlags: InteractiveFlag.drag |
             InteractiveFlag.pinchMove |
             InteractiveFlag.pinchZoom |
             InteractiveFlag.doubleTapZoom,
@@ -49,8 +48,8 @@ class OpenStreetMapProvider extends StatelessWidget {
         if (mapProvider == MapProvider.mapBox) mapBoxTileLayer,
         CurrentLocationLayer(),
         BlocBuilder<MainBloc, MainState>(
-          builder: (context, mainBlocState) =>
-              mainBlocState is StatusOnline && mainBlocState.orders.isEmpty
+          builder: (context, mainBlocState) => mainBlocState is StatusOnline &&
+                  mainBlocState.orders.isEmpty
               ? BlocBuilder<CurrentLocationCubit, CurrentLocationState>(
                   builder: (context, state) {
                     if (state.location != null && state.radius != null) {
@@ -82,8 +81,7 @@ class OpenStreetMapProvider extends StatelessWidget {
                 saveLayers: false,
                 polylines: [
                   Polyline(
-                    points:
-                        state.selectedOrder?.directions
+                    points: state.selectedOrder?.directions
                             ?.map((e) => LatLng(e.lat, e.lng))
                             .toList() ??
                         [],

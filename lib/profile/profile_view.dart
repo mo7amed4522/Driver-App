@@ -76,19 +76,13 @@ class _ProfileViewState extends State<ProfileView> {
                             ProfileInfoCard(
                               title: S.of(context).profile_distance_traveled,
                               subtitle: Text(
-                                driver
-                                            .historyOrdersAggregate
-                                            .first
-                                            .sum
+                                driver.historyOrdersAggregate.first.sum
                                             ?.distanceBest ==
                                         null
                                     ? "0"
-                                    : driver
-                                          .historyOrdersAggregate
-                                          .first
-                                          .sum!
-                                          .distanceBest
-                                          .toString(),
+                                    : driver.historyOrdersAggregate.first.sum!
+                                        .distanceBest
+                                        .toString(),
                                 style: Theme.of(context).textTheme.titleMedium,
                               ),
                             ),
@@ -114,9 +108,8 @@ class _ProfileViewState extends State<ProfileView> {
                                   const SizedBox(width: 4),
                                   Text(
                                     driver.rating?.toString() ?? "-",
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium,
+                                    style:
+                                        Theme.of(context).textTheme.titleMedium,
                                   ),
                                   const SizedBox(width: 12),
                                 ],
@@ -373,7 +366,9 @@ class ProfileInformationRow extends StatelessWidget {
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.labelMedium
+          style: Theme.of(context)
+              .textTheme
+              .labelMedium
               ?.copyWith(color: CustomTheme.neutralColors.shade700),
         ),
         const Spacer(),

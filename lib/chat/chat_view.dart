@@ -31,142 +31,131 @@ class ChatView extends StatelessWidget {
                 document: GET_MESSAGES_QUERY_DOCUMENT,
                 fetchPolicy: FetchPolicy.noCache,
               ),
-              builder:
-                  (
-                    QueryResult result, {
-                    Future<QueryResult?> Function()? refetch,
-                    FetchMore? fetchMore,
-                  }) {
-                    if (result.isLoading || result.hasException) {
-                      return QueryResultView(result);
-                    }
-                    var cubit = context.read<ChatCubit>();
+              builder: (
+                QueryResult result, {
+                Future<QueryResult?> Function()? refetch,
+                FetchMore? fetchMore,
+              }) {
+                if (result.isLoading || result.hasException) {
+                  return QueryResultView(result);
+                }
+                var cubit = context.read<ChatCubit>();
 
-                    var order = GetMessages$Query.fromJson(result.data!)
-                        .driver!
-                        .currentOrders
-                        .first;
-                    var messages = order.conversations
-                        .map((e) => e.toTextMessage(order.rider, order.driver))
-                        .toList();
-                    cubit.setMessages(messages);
-                    return Subscription(
-                      options: SubscriptionOptions(
-                        document: NEW_MESSAGE_RECEIVED_SUBSCRIPTION_DOCUMENT,
+                var order = GetMessages$Query.fromJson(result.data!)
+                    .driver!
+                    .currentOrders
+                    .first;
+                var messages = order.conversations
+                    .map((e) => e.toTextMessage(order.rider, order.driver))
+                    .toList();
+                cubit.setMessages(messages);
+                return Subscription(
+                  options: SubscriptionOptions(
+                    document: NEW_MESSAGE_RECEIVED_SUBSCRIPTION_DOCUMENT,
+                    fetchPolicy: FetchPolicy.noCache,
+                  ),
+                  builder: (QueryResult subscriptionResult) {
+                    if (subscriptionResult.data != null) {
+                      var message = NewMessageReceived$Subscription.fromJson(
+                        subscriptionResult.data!,
+                      )
+                          .newMessageReceived
+                          .toTextMessage(order.rider, order.driver);
+                      cubit.addMessage(message);
+                    }
+                    return Mutation(
+                      options: MutationOptions(
+                        document: SEND_MESSAGE_MUTATION_DOCUMENT,
                         fetchPolicy: FetchPolicy.noCache,
                       ),
-                      builder: (QueryResult subscriptionResult) {
-                        if (subscriptionResult.data != null) {
-                          var message =
-                              NewMessageReceived$Subscription.fromJson(
-                                    subscriptionResult.data!,
-                                  ).newMessageReceived
-                                  .toTextMessage(order.rider, order.driver);
-                          cubit.addMessage(message);
-                        }
-                        return Mutation(
-                          options: MutationOptions(
-                            document: SEND_MESSAGE_MUTATION_DOCUMENT,
-                            fetchPolicy: FetchPolicy.noCache,
-                          ),
-                          builder:
-                              (
-                                RunMutation runMutation,
-                                QueryResult? mutationResult,
-                              ) {
-                                return BlocBuilder<
-                                  ChatCubit,
-                                  List<types.TextMessage>
-                                >(
-                                  builder: (context, state) {
-                                    return Column(
-                                      children: [
-                                        SafeArea(
-                                          minimum: const EdgeInsets.all(16),
-                                          child: Row(
-                                            children: [
-                                              RidyBackButton(
-                                                text: S.of(context).action_back,
-                                              ),
-                                              const Spacer(),
-                                              CupertinoButton(
-                                                child: Container(
-                                                  padding: const EdgeInsets.all(
-                                                    8,
-                                                  ),
-                                                  decoration: BoxDecoration(
-                                                    color: CustomTheme
-                                                        .neutralColors
-                                                        .shade200,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          20,
-                                                        ),
-                                                  ),
-                                                  child: Icon(
-                                                    Ionicons.call,
-                                                    color: CustomTheme
-                                                        .neutralColors
-                                                        .shade600,
-                                                  ),
-                                                ),
-                                                onPressed: () {
-                                                  launchUrl(
-                                                    Uri.parse(
-                                                      "tel://+${order.rider.mobileNumber}",
-                                                    ),
-                                                  );
-                                                },
-                                              ),
-                                            ],
+                      builder: (
+                        RunMutation runMutation,
+                        QueryResult? mutationResult,
+                      ) {
+                        return BlocBuilder<ChatCubit, List<types.TextMessage>>(
+                          builder: (context, state) {
+                            return Column(
+                              children: [
+                                SafeArea(
+                                  minimum: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      RidyBackButton(
+                                        text: S.of(context).action_back,
+                                      ),
+                                      const Spacer(),
+                                      CupertinoButton(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(
+                                            8,
                                           ),
-                                        ),
-                                        Expanded(
-                                          child: Chat(
-                                            messages: state,
-                                            theme: DefaultChatTheme(
-                                              primaryColor:
-                                                  CustomTheme.primaryColors,
-                                              backgroundColor: CustomTheme
-                                                  .primaryColors
-                                                  .shade50,
-                                              inputBackgroundColor: CustomTheme
-                                                  .neutralColors
-                                                  .shade200,
-                                              inputTextColor: Colors.black,
+                                          decoration: BoxDecoration(
+                                            color: CustomTheme
+                                                .neutralColors.shade200,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
                                             ),
-                                            onSendPressed: (text) async {
-                                              var args = SendMessageArguments(
-                                                content: text.text,
-                                                requestId: order.id,
-                                              ).toJson();
-                                              var result = await runMutation(
-                                                args,
-                                              ).networkResult;
-                                              var message =
-                                                  SendMessage$Mutation.fromJson(
-                                                    result!.data!,
-                                                  );
-                                              cubit.addMessage(
-                                                message.createOneOrderMessage
-                                                    .toTextMessage(
-                                                      order.rider,
-                                                      order.driver,
-                                                    ),
-                                              );
-                                            },
-                                            user: order.driver.toUser(),
+                                          ),
+                                          child: Icon(
+                                            Ionicons.call,
+                                            color: CustomTheme
+                                                .neutralColors.shade600,
                                           ),
                                         ),
-                                      ],
-                                    );
-                                  },
-                                );
-                              },
+                                        onPressed: () {
+                                          launchUrl(
+                                            Uri.parse(
+                                              "tel://+${order.rider.mobileNumber}",
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Chat(
+                                    messages: state,
+                                    theme: DefaultChatTheme(
+                                      primaryColor: CustomTheme.primaryColors,
+                                      backgroundColor:
+                                          CustomTheme.primaryColors.shade50,
+                                      inputBackgroundColor:
+                                          CustomTheme.neutralColors.shade200,
+                                      inputTextColor: Colors.black,
+                                    ),
+                                    onSendPressed: (text) async {
+                                      var args = SendMessageArguments(
+                                        content: text.text,
+                                        requestId: order.id,
+                                      ).toJson();
+                                      var result = await runMutation(
+                                        args,
+                                      ).networkResult;
+                                      var message =
+                                          SendMessage$Mutation.fromJson(
+                                        result!.data!,
+                                      );
+                                      cubit.addMessage(
+                                        message.createOneOrderMessage
+                                            .toTextMessage(
+                                          order.rider,
+                                          order.driver,
+                                        ),
+                                      );
+                                    },
+                                    user: order.driver.toUser(),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         );
                       },
                     );
                   },
+                );
+              },
             ),
           );
         },
@@ -177,29 +166,30 @@ class ChatView extends StatelessWidget {
 
 extension ChatDriverExtension on ChatDriverMixin {
   types.User toUser() => types.User(
-    id: 'd$id',
-    firstName: firstName,
-    lastName: lastName,
-    imageUrl: media == null ? null : serverUrl + media!.address,
-  );
+        id: 'd$id',
+        firstName: firstName,
+        lastName: lastName,
+        imageUrl: media == null ? null : serverUrl + media!.address,
+      );
 }
 
 extension ChatRiderExtension on ChatRiderMixin {
   types.User toUser() => types.User(
-    id: 'r$id',
-    firstName: firstName,
-    lastName: lastName,
-    imageUrl: media == null ? null : serverUrl + media!.address,
-  );
+        id: 'r$id',
+        firstName: firstName,
+        lastName: lastName,
+        imageUrl: media == null ? null : serverUrl + media!.address,
+      );
 }
 
 extension ChatMeessageExtension on ChatMessageMixin {
   types.TextMessage toTextMessage(
     ChatRiderMixin rider,
     ChatDriverMixin driver,
-  ) => types.TextMessage(
-    id: id,
-    text: content,
-    author: sentByDriver ? driver.toUser() : rider.toUser(),
-  );
+  ) =>
+      types.TextMessage(
+        id: id,
+        text: content,
+        author: sentByDriver ? driver.toUser() : rider.toUser(),
+      );
 }

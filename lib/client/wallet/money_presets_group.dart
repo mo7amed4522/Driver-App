@@ -25,19 +25,19 @@ class _MoneyPresetsGroupState extends State<MoneyPresetsGroup> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         ...tipPresets.asMap().keys.map(
-          (index) => Flexible(
-            child: TipPresetView(
-              index: index,
-              amount: tipPresets[index],
-              currency: defaultCurrency,
-              isSelected: selectedTip == index,
-              onSelected: (selected) {
-                widget.onAmountChanged(tipPresets[index]);
-                setState(() => selectedTip = selected);
-              },
+              (index) => Flexible(
+                child: TipPresetView(
+                  index: index,
+                  amount: tipPresets[index],
+                  currency: defaultCurrency,
+                  isSelected: selectedTip == index,
+                  onSelected: (selected) {
+                    widget.onAmountChanged(tipPresets[index]);
+                    setState(() => selectedTip = selected);
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
         CustomAmountField(
           hintText: "Custom",
           onChanged: (value) {

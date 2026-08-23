@@ -72,7 +72,9 @@ class TripHistoryItemView extends StatelessWidget {
                   if (isCanceled)
                     Text(
                       canceledText,
-                      style: Theme.of(context).textTheme.labelMedium
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelMedium
                           ?.copyWith(color: const Color(0xffb20d0e)),
                     ),
                 ],

@@ -54,7 +54,9 @@ class WalletCardView extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.headlineMedium
+            style: Theme.of(context)
+                .textTheme
+                .headlineMedium
                 ?.copyWith(color: CustomTheme.primaryColors.shade50),
           ),
           const SizedBox(height: 16),
@@ -74,7 +76,9 @@ class WalletCardView extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 NumberFormat.simpleCurrency(name: currency).format(credit),
-                style: Theme.of(context).textTheme.displayMedium
+                style: Theme.of(context)
+                    .textTheme
+                    .displayMedium
                     ?.copyWith(color: CustomTheme.primaryColors.shade100),
               ),
             ],
@@ -101,7 +105,9 @@ class WalletCardView extends StatelessWidget {
                     const SizedBox(width: 4),
                     Text(
                       actionAddCreditText,
-                      style: Theme.of(context).textTheme.titleMedium
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
                           ?.copyWith(color: CustomTheme.primaryColors.shade200),
                     ),
                   ],
@@ -156,10 +162,10 @@ class WalletCardView extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         actionRedeemGiftCardText ?? "",
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: CustomTheme.primaryColors.shade200,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: CustomTheme.primaryColors.shade200,
+                                ),
                       ),
                     ],
                   ),

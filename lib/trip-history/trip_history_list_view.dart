@@ -36,53 +36,51 @@ class _TripHistoryListViewState extends State<TripHistoryListView> {
                 document: HISTORY_QUERY_DOCUMENT,
                 fetchPolicy: FetchPolicy.noCache,
               ),
-              builder:
-                  (
-                    QueryResult result, {
-                    Refetch? refetch,
-                    FetchMore? fetchMore,
-                  }) {
-                    if (result.hasException || result.isLoading) {
-                      return QueryResultView(result);
-                    }
-                    final query = History$Query.fromJson(result.data!);
-                    final orders = query.orders.edges;
-                    if (orders.isEmpty) {
-                      return EmptyStateCard(
-                        title: S.of(context).empty_state_title_no_record,
-                        description: S.of(context).trip_history_empty_state,
-                        icon: Ionicons.cloud_offline,
-                      );
-                    }
-                    return Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: orders.length,
-                        itemBuilder: (context, index) {
-                          final item = orders[index].node;
-                          return TripHistoryItemView(
-                            id: item.id,
-                            canceledText: S.of(context).order_status_canceled,
-                            title: item.service.name,
-                            dateTime: item.createdOn,
-                            currency: item.currency,
-                            price: item.costAfterCoupon - item.providerShare,
-                            isCanceled:
-                                item.status == OrderStatus.riderCanceled ||
-                                item.status == OrderStatus.driverCanceled,
-                            onPressed: (id) {
-                              showBarModalBottomSheet(
-                                context: context,
-                                builder: (context) {
-                                  return TripHistoryDetailsView(orderId: id);
-                                },
-                              );
+              builder: (
+                QueryResult result, {
+                Refetch? refetch,
+                FetchMore? fetchMore,
+              }) {
+                if (result.hasException || result.isLoading) {
+                  return QueryResultView(result);
+                }
+                final query = History$Query.fromJson(result.data!);
+                final orders = query.orders.edges;
+                if (orders.isEmpty) {
+                  return EmptyStateCard(
+                    title: S.of(context).empty_state_title_no_record,
+                    description: S.of(context).trip_history_empty_state,
+                    icon: Ionicons.cloud_offline,
+                  );
+                }
+                return Expanded(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: orders.length,
+                    itemBuilder: (context, index) {
+                      final item = orders[index].node;
+                      return TripHistoryItemView(
+                        id: item.id,
+                        canceledText: S.of(context).order_status_canceled,
+                        title: item.service.name,
+                        dateTime: item.createdOn,
+                        currency: item.currency,
+                        price: item.costAfterCoupon - item.providerShare,
+                        isCanceled: item.status == OrderStatus.riderCanceled ||
+                            item.status == OrderStatus.driverCanceled,
+                        onPressed: (id) {
+                          showBarModalBottomSheet(
+                            context: context,
+                            builder: (context) {
+                              return TripHistoryDetailsView(orderId: id);
                             },
                           );
                         },
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ),

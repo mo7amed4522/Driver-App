@@ -136,8 +136,8 @@ class RegisterContactDetailsView extends StatelessWidget {
                   onPressed: () async {
                     bool? isValid = _formKey.currentState?.validate();
                     if (isValid != true) return;
-                    final input = UpdateDriverInput(gender: driver.gender)
-                        .toJson();
+                    final input =
+                        UpdateDriverInput(gender: driver.gender).toJson();
                     onLoadingStateUpdated(true);
                     await runMutation({
                       "input": {

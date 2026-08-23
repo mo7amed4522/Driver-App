@@ -86,27 +86,25 @@ class _EarningsViewState extends State<EarningsView> {
                   endDate: endDate,
                 ).toJson(),
               ),
-              builder:
-                  (
-                    QueryResult result, {
-                    Future<QueryResult?> Function()? refetch,
-                    FetchMore? fetchMore,
-                  }) {
-                    if (result.isLoading) {
-                      return const Expanded(child: QueryResultLoadingView());
-                    }
-                    if (result.hasException) {
-                      return Center(
-                        child: Text(
-                          result.exception?.graphqlErrors.first.message ?? "",
-                        ),
-                      );
-                    }
-                    final stats = GetStats$Query.fromJson(result.data!);
-                    var index = 0;
-                    final List<BarChartGroupData> barData = stats
-                        .getStatsNew
-                        .dataset
+              builder: (
+                QueryResult result, {
+                Future<QueryResult?> Function()? refetch,
+                FetchMore? fetchMore,
+              }) {
+                if (result.isLoading) {
+                  return const Expanded(child: QueryResultLoadingView());
+                }
+                if (result.hasException) {
+                  return Center(
+                    child: Text(
+                      result.exception?.graphqlErrors.first.message ?? "",
+                    ),
+                  );
+                }
+                final stats = GetStats$Query.fromJson(result.data!);
+                var index = 0;
+                final List<BarChartGroupData> barData =
+                    stats.getStatsNew.dataset
                         .map<BarChartGroupData>(
                           (data) => BarChartGroupData(
                             x: index++,
@@ -128,115 +126,106 @@ class _EarningsViewState extends State<EarningsView> {
                           ),
                         )
                         .toList();
-                    if (stats.getStatsNew.dataset.isEmpty) {
-                      return EmptyStateCard(
-                        title: S.of(context).empty_state_title_no_record,
-                        description: S.of(context).earnings_empty_state_body,
-                        icon: Ionicons.cloud_offline,
-                      );
-                    }
-                    return Expanded(
-                      child: Column(
-                        children: [
-                          SizedBox(
-                            height: 300,
-                            child: BarChart(
-                              BarChartData(
-                                barTouchData: BarTouchData(
-                                  touchTooltipData: BarTouchTooltipData(
-                                    getTooltipColor: (_) =>
-                                        Colors.grey.shade800,
-                                    getTooltipItem:
-                                        (
-                                          group,
-                                          groupIndex,
-                                          rod,
-                                          rodIndex,
-                                        ) => BarTooltipItem(
-                                          NumberFormat.simpleCurrency(
-                                            name: stats.getStatsNew.currency,
-                                          ).format(
-                                            stats
-                                                .getStatsNew
-                                                .dataset[groupIndex]
-                                                .earning,
-                                          ),
-                                          const TextStyle(color: Colors.white),
-                                        ),
+                if (stats.getStatsNew.dataset.isEmpty) {
+                  return EmptyStateCard(
+                    title: S.of(context).empty_state_title_no_record,
+                    description: S.of(context).earnings_empty_state_body,
+                    icon: Ionicons.cloud_offline,
+                  );
+                }
+                return Expanded(
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 300,
+                        child: BarChart(
+                          BarChartData(
+                            barTouchData: BarTouchData(
+                              touchTooltipData: BarTouchTooltipData(
+                                getTooltipColor: (_) => Colors.grey.shade800,
+                                getTooltipItem: (
+                                  group,
+                                  groupIndex,
+                                  rod,
+                                  rodIndex,
+                                ) =>
+                                    BarTooltipItem(
+                                  NumberFormat.simpleCurrency(
+                                    name: stats.getStatsNew.currency,
+                                  ).format(
+                                    stats.getStatsNew.dataset[groupIndex]
+                                        .earning,
                                   ),
-                                ),
-                                barGroups: barData,
-                                groupsSpace: 0,
-                                gridData: FlGridData(show: false),
-                                borderData: FlBorderData(show: false),
-                                titlesData: FlTitlesData(
-                                  leftTitles: AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  rightTitles: AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  topTitles: AxisTitles(
-                                    sideTitles: SideTitles(showTitles: false),
-                                  ),
-                                  bottomTitles: AxisTitles(
-                                    sideTitles: SideTitles(
-                                      reservedSize: 40,
-                                      showTitles: true,
-                                      getTitlesWidget: (index, title) {
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 8,
-                                          ),
-                                          child: Text(
-                                            stats
-                                                .getStatsNew
-                                                .dataset[index.toInt()]
-                                                .name
-                                                .substring(0, 1),
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .labelMedium,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
+                                  const TextStyle(color: Colors.white),
                                 ),
                               ),
-                              swapAnimationDuration: const Duration(
-                                milliseconds: 250,
+                            ),
+                            barGroups: barData,
+                            groupsSpace: 0,
+                            gridData: FlGridData(show: false),
+                            borderData: FlBorderData(show: false),
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  reservedSize: 40,
+                                  showTitles: true,
+                                  getTitlesWidget: (index, title) {
+                                    return Padding(
+                                      padding: const EdgeInsets.only(
+                                        top: 8,
+                                      ),
+                                      child: Text(
+                                        stats.getStatsNew.dataset[index.toInt()]
+                                            .name
+                                            .substring(0, 1),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .labelMedium,
+                                      ),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),
-                          Expanded(
-                            child: ListView.builder(
-                              itemCount: stats.orders.edges.length,
-                              itemBuilder: ((context, index) {
-                                final item = stats.orders.edges[index].node;
-                                return TripHistoryItemView(
-                                  id: item.id,
-                                  canceledText: S
-                                      .of(context)
-                                      .order_status_canceled,
-                                  title: item.service.name,
-                                  dateTime: item.createdOn,
-                                  currency: item.currency,
-                                  price:
-                                      item.costAfterCoupon - item.providerShare,
-                                  isCanceled:
-                                      item.status ==
-                                          OrderStatus.riderCanceled ||
-                                      item.status == OrderStatus.driverCanceled,
-                                  onPressed: (id) {},
-                                );
-                              }),
-                            ),
+                          swapAnimationDuration: const Duration(
+                            milliseconds: 250,
                           ),
-                        ],
+                        ),
                       ),
-                    );
-                  },
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: stats.orders.edges.length,
+                          itemBuilder: ((context, index) {
+                            final item = stats.orders.edges[index].node;
+                            return TripHistoryItemView(
+                              id: item.id,
+                              canceledText: S.of(context).order_status_canceled,
+                              title: item.service.name,
+                              dateTime: item.createdOn,
+                              currency: item.currency,
+                              price: item.costAfterCoupon - item.providerShare,
+                              isCanceled:
+                                  item.status == OrderStatus.riderCanceled ||
+                                      item.status == OrderStatus.driverCanceled,
+                              onPressed: (id) {},
+                            );
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ],
         ),

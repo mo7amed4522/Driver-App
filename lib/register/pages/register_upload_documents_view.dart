@@ -154,7 +154,9 @@ class _RegisterUploadDocumentsViewState
                               Text(
                                 S.of(context).action_upload_document,
                                 textAlign: TextAlign.center,
-                                style: Theme.of(context).textTheme.headlineSmall
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .headlineSmall
                                     ?.copyWith(fontSize: 14),
                               ),
                             ],
@@ -218,11 +220,11 @@ class _RegisterUploadDocumentsViewState
                       content: Text(
                         demoMode
                             ? S
-                                  .of(context)
-                                  .driver_registration_approved_demo_mode
+                                .of(context)
+                                .driver_registration_approved_demo_mode
                             : S
-                                  .of(context)
-                                  .driver_register_profile_submitted_message,
+                                .of(context)
+                                .driver_register_profile_submitted_message,
                       ),
                       actions: [
                         TextButton(

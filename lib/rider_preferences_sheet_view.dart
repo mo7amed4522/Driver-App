@@ -70,9 +70,8 @@ class RidePreferenceItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 width: 1,
-                color: isSelected
-                    ? CustomTheme.primaryColors
-                    : Colors.transparent,
+                color:
+                    isSelected ? CustomTheme.primaryColors : Colors.transparent,
               ),
               color: isSelected
                   ? CustomTheme.primaryColors.shade200

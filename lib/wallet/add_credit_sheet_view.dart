@@ -44,35 +44,34 @@ class _AddCreditSheetViewState extends State<AddCreditSheetView> {
           ).pOnly(bottom: 8),
           Query(
             options: QueryOptions(document: PAYMENT_GATEWAYS_QUERY_DOCUMENT),
-            builder:
-                (
-                  QueryResult result, {
-                  Future<QueryResult?> Function()? refetch,
-                  FetchMore? fetchMore,
-                }) {
-                  if (result.isLoading || result.hasException) {
-                    return QueryResultView(result);
-                  }
-                  final gateways = PaymentGateways$Query.fromJson(result.data!)
-                      .paymentGateways;
-                  return Column(
-                    children: gateways
-                        .map(
-                          (gateway) => PaymentMethodItem(
-                            id: gateway.id,
-                            title: gateway.title,
-                            selectedValue: selectedGatewayId,
-                            imageAddress: gateway.media != null
-                                ? serverUrl + gateway.media!.address
-                                : null,
-                            onSelected: (value) {
-                              setState(() => selectedGatewayId = gateway.id);
-                            },
-                          ),
-                        )
-                        .toList(),
-                  );
-                },
+            builder: (
+              QueryResult result, {
+              Future<QueryResult?> Function()? refetch,
+              FetchMore? fetchMore,
+            }) {
+              if (result.isLoading || result.hasException) {
+                return QueryResultView(result);
+              }
+              final gateways =
+                  PaymentGateways$Query.fromJson(result.data!).paymentGateways;
+              return Column(
+                children: gateways
+                    .map(
+                      (gateway) => PaymentMethodItem(
+                        id: gateway.id,
+                        title: gateway.title,
+                        selectedValue: selectedGatewayId,
+                        imageAddress: gateway.media != null
+                            ? serverUrl + gateway.media!.address
+                            : null,
+                        onSelected: (value) {
+                          setState(() => selectedGatewayId = gateway.id);
+                        },
+                      ),
+                    )
+                    .toList(),
+              );
+            },
           ),
           const SizedBox(height: 16),
           Text(
@@ -93,8 +92,7 @@ class _AddCreditSheetViewState extends State<AddCreditSheetView> {
               ),
               builder: (RunMutation runMutation, QueryResult? result) {
                 return ElevatedButton(
-                  onPressed:
-                      ((result?.isLoading ?? false) ||
+                  onPressed: ((result?.isLoading ?? false) ||
                           amount == null ||
                           selectedGatewayId == null)
                       ? null

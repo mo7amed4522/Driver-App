@@ -169,138 +169,124 @@ class MyHomePage extends StatelessWidget with WidgetsBindingObserver {
                     ).toJson(),
                     fetchPolicy: FetchPolicy.noCache,
                   ),
-                  builder:
-                      (
-                        QueryResult result, {
-                        Refetch? refetch,
-                        FetchMore? fetchMore,
-                      }) {
-                        if (result.isLoading || result.hasException) {
-                          return QueryResultView(result);
+                  builder: (
+                    QueryResult result, {
+                    Refetch? refetch,
+                    FetchMore? fetchMore,
+                  }) {
+                    if (result.isLoading || result.hasException) {
+                      return QueryResultView(result);
+                    }
+                    this.refetch = refetch;
+                    final mquery = Me$Query.fromJson(result.data!);
+                    if (mquery.requireUpdate == VersionStatus.mandatoryUpdate) {
+                      mainBloc.add(
+                        VersionStatusEvent(mquery.requireUpdate),
+                      );
+                    } else {
+                      mainBloc.add(DriverUpdated(mquery.driver!));
+                      locationCubit.setRadius(
+                        mquery.driver!.searchDistance,
+                      );
+                    }
+                    return BlocConsumer<MainBloc, MainState>(
+                      listenWhen: (MainState previous, MainState next) {
+                        if (previous is StatusUnregistered &&
+                            next is StatusUnregistered &&
+                            previous.driver?.status == next.driver?.status) {
+                          return false;
                         }
-                        this.refetch = refetch;
-                        final mquery = Me$Query.fromJson(result.data!);
-                        if (mquery.requireUpdate ==
-                            VersionStatus.mandatoryUpdate) {
-                          mainBloc.add(
-                            VersionStatusEvent(mquery.requireUpdate),
-                          );
-                        } else {
-                          mainBloc.add(DriverUpdated(mquery.driver!));
-                          locationCubit.setRadius(
-                            mquery.driver!.searchDistance,
+                        if ((previous is StatusOnline) &&
+                            next is StatusOnline) {
+                          return false;
+                        }
+                        return true;
+                      },
+                      listener: (context, state) {
+                        if (state is StatusOnline) {
+                          refetch!();
+                        }
+                      },
+                      builder: (context, state) {
+                        if (state is StatusUnregistered) {
+                          return UnregisteredDriverMessagesView(
+                            driver: state.driver,
+                            refetch: refetch,
                           );
                         }
-                        return BlocConsumer<MainBloc, MainState>(
-                          listenWhen: (MainState previous, MainState next) {
-                            if (previous is StatusUnregistered &&
-                                next is StatusUnregistered &&
-                                previous.driver?.status ==
-                                    next.driver?.status) {
-                              return false;
-                            }
-                            if ((previous is StatusOnline) &&
-                                next is StatusOnline) {
-                              return false;
-                            }
-                            return true;
-                          },
-                          listener: (context, state) {
-                            if (state is StatusOnline) {
-                              refetch!();
-                            }
-                          },
-                          builder: (context, state) {
-                            if (state is StatusUnregistered) {
-                              return UnregisteredDriverMessagesView(
-                                driver: state.driver,
-                                refetch: refetch,
-                              );
-                            }
-                            return Stack(
-                              children: [
-                                if (mapProvider == MapProvider.openStreetMap ||
-                                    mapProvider == MapProvider.mapBox)
-                                  OpenStreetMapProvider(),
-                                if (mapProvider == MapProvider.googleMap)
-                                  GoogleMapProvider(),
-                                SafeArea(
-                                  minimum: const EdgeInsets.all(16),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      _getMenuButton(),
-                                      const Spacer(),
-                                      _getWalletButton(context, state),
-                                      if (state is! StatusInService)
-                                        const Spacer(),
-                                      _getOnlineOfflineButton(context, state),
-                                    ],
-                                  ),
+                        return Stack(
+                          children: [
+                            if (mapProvider == MapProvider.openStreetMap ||
+                                mapProvider == MapProvider.mapBox)
+                              OpenStreetMapProvider(),
+                            if (mapProvider == MapProvider.googleMap)
+                              GoogleMapProvider(),
+                            SafeArea(
+                              minimum: const EdgeInsets.all(16),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _getMenuButton(),
+                                  const Spacer(),
+                                  _getWalletButton(context, state),
+                                  if (state is! StatusInService) const Spacer(),
+                                  _getOnlineOfflineButton(context, state),
+                                ],
+                              ),
+                            ),
+                            if (state is StatusOffline ||
+                                (state is StatusOnline && state.orders.isEmpty))
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: NoticeBar(
+                                  title: state is StatusOffline
+                                      ? S.of(context).status_offline_description
+                                      : S.of(context).status_online_description,
                                 ),
-                                if (state is StatusOffline ||
-                                    (state is StatusOnline &&
-                                        state.orders.isEmpty))
-                                  Positioned(
-                                    bottom: 0,
-                                    left: 0,
-                                    right: 0,
-                                    child: NoticeBar(
-                                      title: state is StatusOffline
-                                          ? S
-                                                .of(context)
-                                                .status_offline_description
-                                          : S
-                                                .of(context)
-                                                .status_online_description,
-                                    ),
+                              ),
+                            if (state is StatusOnline)
+                              Positioned(
+                                bottom: 0,
+                                child: SizedBox(
+                                  width: MediaQuery.of(context).size.width,
+                                  height: 350,
+                                  child: OrdersCarouselView(),
+                                ),
+                              ),
+                            if (state is StatusInService &&
+                                state.driver!.currentOrders.isNotEmpty)
+                              Positioned(
+                                bottom: 0,
+                                child: Subscription(
+                                  options: SubscriptionOptions(
+                                    document:
+                                        ORDER_UPDATED_SUBSCRIPTION_DOCUMENT,
+                                    fetchPolicy: FetchPolicy.noCache,
                                   ),
-                                if (state is StatusOnline)
-                                  Positioned(
-                                    bottom: 0,
-                                    child: SizedBox(
+                                  builder: (QueryResult result) {
+                                    if (result.data != null) {
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                        refetch!();
+                                      });
+                                    }
+                                    return SizedBox(
                                       width: MediaQuery.of(context).size.width,
-                                      height: 350,
-                                      child: OrdersCarouselView(),
-                                    ),
-                                  ),
-                                if (state is StatusInService &&
-                                    state.driver!.currentOrders.isNotEmpty)
-                                  Positioned(
-                                    bottom: 0,
-                                    child: Subscription(
-                                      options: SubscriptionOptions(
-                                        document:
-                                            ORDER_UPDATED_SUBSCRIPTION_DOCUMENT,
-                                        fetchPolicy: FetchPolicy.noCache,
+                                      child: OrderStatusCardView(
+                                        order:
+                                            state.driver!.currentOrders.first,
                                       ),
-                                      builder: (QueryResult result) {
-                                        if (result.data != null) {
-                                          WidgetsBinding.instance
-                                              .addPostFrameCallback((_) {
-                                                refetch!();
-                                              });
-                                        }
-                                        return SizedBox(
-                                          width: MediaQuery.of(context)
-                                              .size
-                                              .width,
-                                          child: OrderStatusCardView(
-                                            order: state
-                                                .driver!
-                                                .currentOrders
-                                                .first,
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                              ],
-                            );
-                          },
+                                    );
+                                  },
+                                ),
+                              ),
+                          ],
                         );
                       },
+                    );
+                  },
                 );
               },
             ),
@@ -360,38 +346,40 @@ class MyHomePage extends StatelessWidget with WidgetsBindingObserver {
                     icon: const Icon(Ionicons.car_sport),
                   )
                 : ((state is StatusOnline)
-                      ? FloatingActionButton.extended(
-                          key: const Key('online'),
-                          heroTag: 'fabOnline',
-                          elevation: 0,
-                          onPressed: (result?.isLoading ?? false)
-                              ? null
-                              : () async {
-                                  final res = await runMutation(
-                                    UpdateDriverStatusArguments(
-                                      status: DriverStatus.offline,
-                                    ).toJson(),
-                                  ).networkResult;
-                                  final driver =
-                                      UpdateDriverStatus$Mutation.fromJson(
-                                        res!.data!,
-                                      );
-                                  mainBloc.add(
-                                    DriverUpdated(driver.updateOneDriver),
-                                  );
-                                },
-                          label: Text(
-                            S.of(context).statusOnline,
-                            style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(
-                                  color: CustomTheme.primaryColors.shade600,
-                                ),
-                          ),
-                          backgroundColor: CustomTheme.primaryColors.shade200,
-                          foregroundColor: CustomTheme.primaryColors.shade600,
-                          icon: const Icon(Ionicons.power),
-                        )
-                      : const SizedBox()),
+                    ? FloatingActionButton.extended(
+                        key: const Key('online'),
+                        heroTag: 'fabOnline',
+                        elevation: 0,
+                        onPressed: (result?.isLoading ?? false)
+                            ? null
+                            : () async {
+                                final res = await runMutation(
+                                  UpdateDriverStatusArguments(
+                                    status: DriverStatus.offline,
+                                  ).toJson(),
+                                ).networkResult;
+                                final driver =
+                                    UpdateDriverStatus$Mutation.fromJson(
+                                  res!.data!,
+                                );
+                                mainBloc.add(
+                                  DriverUpdated(driver.updateOneDriver),
+                                );
+                              },
+                        label: Text(
+                          S.of(context).statusOnline,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(
+                                color: CustomTheme.primaryColors.shade600,
+                              ),
+                        ),
+                        backgroundColor: CustomTheme.primaryColors.shade200,
+                        foregroundColor: CustomTheme.primaryColors.shade600,
+                        icon: const Icon(Ionicons.power),
+                      )
+                    : const SizedBox()),
           ),
         );
       },
@@ -445,7 +433,9 @@ class MyHomePage extends StatelessWidget with WidgetsBindingObserver {
                   name: state.driver!.wallets.first.currency,
                 ).format(state.driver!.wallets.first.balance)
               : "-",
-          style: Theme.of(context).textTheme.headlineSmall
+          style: Theme.of(context)
+              .textTheme
+              .headlineSmall
               ?.copyWith(color: CustomTheme.primaryColors),
         ),
       ),
