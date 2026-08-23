@@ -41,7 +41,7 @@ android {
             keyAlias = (keystoreProperties["keyAlias"] as? String) ?: ""
             keyPassword = (keystoreProperties["keyPassword"] as? String) ?: ""
             val storeFileProp = keystoreProperties["storeFile"] as? String
-            storeFile = if (storeFileProp != null) file(storeFileProp) else null
+            storeFile = if (storeFileProp != null) rootProject.file(storeFileProp) else null
             storePassword = (keystoreProperties["storePassword"] as? String) ?: ""
         }
     }

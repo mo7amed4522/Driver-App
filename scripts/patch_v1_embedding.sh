@@ -1,75 +1,87 @@
 #!/usr/bin/env bash
-# Patch outdated plugins that reference deleted v1 embedding APIs.
-# Run this after `flutter pub get` to fix "Build failed due to use of deleted Android v1 embedding".
-
 set -euo pipefail
 
-PUB_CACHE="${PUB_CACHE:-$HOME/.pub-cache}"
-HOSTED="$PUB_CACHE/hosted/pub.dev"
+# Patch outdated plugins in pub cache for Flutter 3.47.1 compatibility
+# Fixes: v1 embedding API removal (PluginRegistry.Registrar deleted)
+#        and AGP8.x namespace requirements
 
-patch_geolocator() {
-  local dir="$HOSTED/geolocator_android-4.3.1"
-  [ -d "$dir" ] || return 0
-  local src="$dir/android/src/main/java/com/baseflow/geolocator/GeolocatorPlugin.java"
-  [ -f "$src" ] || return 0
+CACHE="$HOME/.pub-cache/hosted/pub.dev"
 
-  # Remove the pluginRegistrar field
-  sed -i '' '/@SuppressWarnings("deprecation")/,/private io\.flutter\.plugin\.common\.PluginRegistry\.Registrar pluginRegistrar;/d' "$src"
-  # Remove the registerWith static method (from "public static void registerWith" to the closing brace)
-  # Use a Python script for multi-line removal
-  python3 - "$src" << 'PY'
-import sys, re
-path = sys.argv[1]
-with open(path) as f:
-    content = f.read()
-# Remove the registerWith static method block
-content = re.sub(
-    r'  @SuppressWarnings\("deprecation"\)\s*\n\s*public static void registerWith\(.*?\n  \}\n',
-    '',
-    content,
-    flags=re.DOTALL
-)
-# Remove the pluginRegistrar usage in registerListeners - replace the if/else with just the else branch
-content = re.sub(
-    r'  private void registerListeners\(\) \{\n    if \(pluginRegistrar != null\) \{\n      pluginRegistrar\.addActivityResultListener\(this\.geolocationManager\);\n      pluginRegistrar\.addRequestPermissionsResultListener\(this\.permissionManager\);\n    \} else if \(pluginBinding != null\) \{\n      pluginBinding\.addActivityResultListener\(this\.geolocationManager\);\n      pluginBinding\.addRequestPermissionsResultListener\(this\.permissionManager\);\n    \}\n  \}',
-    '''  private void registerListeners() {
+echo "Patching geolocator_android..."
+python3 - "$CACHE" << 'PYEOF'
+from pathlib import Path
+import sys
+cache = sys.argv[1]
+p = Path(f"{cache}/geolocator_android-4.3.1/android/src/main/java/com/baseflow/geolocator/GeolocatorPlugin.java")
+if p.exists():
+    c = p.read_text()
+    c = c.replace('''  @SuppressWarnings("deprecation")
+  @Nullable
+  private io.flutter.plugin.common.PluginRegistry.Registrar pluginRegistrar;
+''', '')
+    c = c.replace('''  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
+  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
+  // plugin registration via this function while apps migrate to use the new Android APIs
+  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
+  //
+  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
+  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
+  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
+  // in the same class.
+  @SuppressWarnings("deprecation")
+  public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
+    GeolocatorPlugin geolocatorPlugin = new GeolocatorPlugin();
+    geolocatorPlugin.pluginRegistrar = registrar;
+    geolocatorPlugin.registerListeners();
+
+    MethodCallHandlerImpl methodCallHandler =
+        new MethodCallHandlerImpl(
+            geolocatorPlugin.permissionManager,
+            geolocatorPlugin.geolocationManager,
+            geolocatorPlugin.locationAccuracyManager);
+    methodCallHandler.startListening(registrar.context(), registrar.messenger());
+    methodCallHandler.setActivity(registrar.activity());
+
+    StreamHandlerImpl streamHandler = new StreamHandlerImpl(geolocatorPlugin.permissionManager);
+    streamHandler.startListening(registrar.context(), registrar.messenger());
+
+    LocationServiceHandlerImpl locationServiceHandler = new LocationServiceHandlerImpl();
+    locationServiceHandler.startListening(registrar.context(), registrar.messenger());
+    locationServiceHandler.setContext(registrar.activeContext());
+    geolocatorPlugin.bindForegroundService(registrar.activeContext());
+  }
+
+''', '')
+    c = c.replace('''  private void registerListeners() {
+    if (pluginRegistrar != null) {
+      pluginRegistrar.addActivityResultListener(this.geolocationManager);
+      pluginRegistrar.addRequestPermissionsResultListener(this.permissionManager);
+    } else if (pluginBinding != null) {
+      pluginBinding.addActivityResultListener(this.geolocationManager);
+      pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
+    }
+  }''', '''  private void registerListeners() {
     if (pluginBinding != null) {
       pluginBinding.addActivityResultListener(this.geolocationManager);
       pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
     }
-  }''',
-    content
-)
-with open(path, 'w') as f:
-    f.write(content)
-PY
-  echo "Patched geolocator_android-4.3.1"
-}
+  }''')
+    p.write_text(c)
+    print("Patched geolocator_android-4.3.1")
 
-patch_device_info() {
-  local dir="$HOSTED/device_info-2.0.3"
-  [ -d "$dir" ] || return 0
-  local src="$dir/android/src/main/java/io/flutter/plugins/deviceinfo/DeviceInfoPlugin.java"
-  [ -f "$src" ] || return 0
+p2 = Path(f"{cache}/flutter_compass-0.7.0/android/build.gradle")
+if p2.exists():
+    c = p2.read_text()
+    c = c.replace('    compileSdkVersion 30', "    namespace 'com.hemanthraj.fluttercompass'\n    compileSdkVersion 34")
+    p2.write_text(c)
+    print("Patched flutter_compass-0.7.0 build.gradle")
 
-  python3 - "$src" << 'PY'
-import sys, re
-path = sys.argv[1]
-with open(path) as f:
-    content = f.read()
-# Remove the registerWith static method
-content = re.sub(
-    r'  /\*\* Plugin registration\. \*/\s*\n  @SuppressWarnings\("deprecation"\)\s*\n  public static void registerWith\(.*?\n  \}\n',
-    '',
-    content,
-    flags=re.DOTALL
-)
-with open(path, 'w') as f:
-    f.write(content)
-PY
-  echo "Patched device_info-2.0.3"
-}
+p3 = Path(f"{cache}/flutter_compass-0.7.0/android/src/main/AndroidManifest.xml")
+if p3.exists():
+    c = p3.read_text()
+    c = c.replace('  package="com.hemanthraj.fluttercompass">', '>')
+    p3.write_text(c)
+    print("Patched flutter_compass-0.7.0 manifest")
+PYEOF
 
-patch_geolocator
-patch_device_info
-echo "v1 embedding patches applied successfully"
+echo "v1 embedding and namespace patches applied successfully"
