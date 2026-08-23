@@ -27,8 +27,8 @@ class GoogleMapProvider extends StatelessWidget {
 
   final Stream<geo.Position> streamServerLocation =
       geo.Geolocator.getPositionStream(
-        locationSettings: const geo.LocationSettings(distanceFilter: 50),
-      );
+    locationSettings: const geo.LocationSettings(distanceFilter: 50),
+  );
 
   GoogleMapProvider({super.key});
 
@@ -56,10 +56,8 @@ class GoogleMapProvider extends StatelessWidget {
                 geo.Geolocator.requestPermission();
               }
             });
-            final currentLocation = context
-                .read<CurrentLocationCubit>()
-                .state
-                .location;
+            final currentLocation =
+                context.read<CurrentLocationCubit>().state.location;
 
             if (state.markers.isNotEmpty) {
               final points = state.markers
@@ -102,8 +100,7 @@ class GoogleMapProvider extends StatelessWidget {
                 initialCameraPosition: _kGooglePlex,
                 padding: const EdgeInsets.only(bottom: 50),
                 myLocationEnabled: true,
-                myLocationButtonEnabled:
-                    state is StatusOffline ||
+                myLocationButtonEnabled: state is StatusOffline ||
                     (state is StatusOnline && state.orders.isEmpty),
                 onMapCreated: (GoogleMapController controller) {
                   _controller.complete(controller);

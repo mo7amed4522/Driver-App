@@ -84,10 +84,10 @@ class MyGraphqlProvider extends StatelessWidget {
     required String subscriptionUri,
     String? jwt,
   }) : client = clientFor(
-         uri: uri,
-         subscriptionUri: subscriptionUri,
-         jwtToken: jwt,
-       );
+          uri: uri,
+          subscriptionUri: subscriptionUri,
+          jwtToken: jwt,
+        );
 
   final Widget child;
   final ValueNotifier<GraphQLClient> client;

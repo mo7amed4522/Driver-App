@@ -147,9 +147,8 @@ class DrawerView extends StatelessWidget {
                 applicationVersion:
                     "${packageInfo.version} (Build ${packageInfo.buildNumber})",
                 applicationName: packageInfo.appName,
-                applicationLegalese: S
-                    .of(context)
-                    .copyright_notice(companyName),
+                applicationLegalese:
+                    S.of(context).copyright_notice(companyName),
               );
             },
           ),
@@ -221,26 +220,25 @@ class DrawerView extends StatelessWidget {
                               options: MutationOptions(
                                 document: DELETE_USER_MUTATION_DOCUMENT,
                               ),
-                              builder:
-                                  (
-                                    RunMutation runMutation,
-                                    QueryResult? result,
-                                  ) {
-                                    return TextButton(
-                                      onPressed: () async {
-                                        Navigator.pop(context);
-                                        await runMutation({}).networkResult;
-                                        await Hive.box('user').delete('jwt');
-                                      },
-                                      child: Text(
-                                        S.of(context).action_delete_account,
-                                        textAlign: TextAlign.end,
-                                        style: const TextStyle(
-                                          color: Color(0xffb20d0e),
-                                        ),
-                                      ),
-                                    );
+                              builder: (
+                                RunMutation runMutation,
+                                QueryResult? result,
+                              ) {
+                                return TextButton(
+                                  onPressed: () async {
+                                    Navigator.pop(context);
+                                    await runMutation({}).networkResult;
+                                    await Hive.box('user').delete('jwt');
                                   },
+                                  child: Text(
+                                    S.of(context).action_delete_account,
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                      color: Color(0xffb20d0e),
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                           const Spacer(),

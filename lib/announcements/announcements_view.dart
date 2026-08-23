@@ -33,70 +33,65 @@ class AnnouncementsView extends StatelessWidget {
             const SizedBox(height: 16),
             Query(
               options: QueryOptions(document: ANNOUNCEMENTS_QUERY_DOCUMENT),
-              builder:
-                  (
-                    QueryResult result, {
-                    Future<QueryResult?> Function()? refetch,
-                    FetchMore? fetchMore,
-                  }) {
-                    if (result.isLoading) {
-                      return Shimmer.fromColors(
-                        baseColor: CustomTheme.neutralColors.shade300,
-                        highlightColor: CustomTheme.neutralColors.shade100,
-                        enabled: true,
-                        child: const ListShimmerSkeleton(),
-                      );
-                    }
-                    final announcements = Announcements$Query.fromJson(
-                      result.data!,
-                    ).announcements;
-                    if (announcements.isEmpty) {
-                      return EmptyStateCard(
-                        title: S.of(context).announcements_empty_state_title,
-                        description: S
-                            .of(context)
-                            .announcements_empty_state_body,
-                        icon: Ionicons.notifications_off_circle,
-                      );
-                    }
-                    return Expanded(
-                      child: ListView.builder(
-                        itemCount: announcements.length,
-                        itemBuilder: (context, index) {
-                          return CupertinoButton(
-                            padding: const EdgeInsets.all(0),
-                            onPressed: announcements[index].url.isEmptyOrNull
-                                ? null
-                                : () {
-                                    launchUrl(
-                                      Uri.parse(announcements[index].url!),
-                                      mode: LaunchMode.externalApplication,
-                                    );
-                                  },
-                            child: Card(
-                              child: ListTile(
-                                title: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      DateFormat("yyyy-MM-dd")
-                                          .format(announcements[index].startAt),
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodySmall,
-                                    ),
-                                    Text(announcements[index].title),
-                                  ],
+              builder: (
+                QueryResult result, {
+                Future<QueryResult?> Function()? refetch,
+                FetchMore? fetchMore,
+              }) {
+                if (result.isLoading) {
+                  return Shimmer.fromColors(
+                    baseColor: CustomTheme.neutralColors.shade300,
+                    highlightColor: CustomTheme.neutralColors.shade100,
+                    enabled: true,
+                    child: const ListShimmerSkeleton(),
+                  );
+                }
+                final announcements = Announcements$Query.fromJson(
+                  result.data!,
+                ).announcements;
+                if (announcements.isEmpty) {
+                  return EmptyStateCard(
+                    title: S.of(context).announcements_empty_state_title,
+                    description: S.of(context).announcements_empty_state_body,
+                    icon: Ionicons.notifications_off_circle,
+                  );
+                }
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: announcements.length,
+                    itemBuilder: (context, index) {
+                      return CupertinoButton(
+                        padding: const EdgeInsets.all(0),
+                        onPressed: announcements[index].url.isEmptyOrNull
+                            ? null
+                            : () {
+                                launchUrl(
+                                  Uri.parse(announcements[index].url!),
+                                  mode: LaunchMode.externalApplication,
+                                );
+                              },
+                        child: Card(
+                          child: ListTile(
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  DateFormat("yyyy-MM-dd")
+                                      .format(announcements[index].startAt),
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
-                                subtitle: Text(announcements[index].description)
-                                    .pOnly(top: 6),
-                              ).pOnly(bottom: 10, top: 8),
+                                Text(announcements[index].title),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-                    );
-                  },
+                            subtitle: Text(announcements[index].description)
+                                .pOnly(top: 6),
+                          ).pOnly(bottom: 10, top: 8),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              },
             ),
           ],
         ),

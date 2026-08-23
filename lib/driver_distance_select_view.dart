@@ -27,21 +27,21 @@ class DriverDistanceSelect extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   onPressed:
                       (result?.isLoading ?? false || state.radius == null)
-                      ? null
-                      : () async {
-                          if ((state.radius ?? 0) > 1000) {
-                            final newDistance = (state.radius ?? 0) - 1000;
-                            await runMutation(
-                              UpdateDriverSearchDistanceArguments(
-                                distance: newDistance,
-                              ).toJson(),
-                            ).networkResult;
-                            // ignore: use_build_context_synchronously
-                            context.read<CurrentLocationCubit>().setRadius(
-                              newDistance,
-                            );
-                          }
-                        },
+                          ? null
+                          : () async {
+                              if ((state.radius ?? 0) > 1000) {
+                                final newDistance = (state.radius ?? 0) - 1000;
+                                await runMutation(
+                                  UpdateDriverSearchDistanceArguments(
+                                    distance: newDistance,
+                                  ).toJson(),
+                                ).networkResult;
+                                // ignore: use_build_context_synchronously
+                                context.read<CurrentLocationCubit>().setRadius(
+                                      newDistance,
+                                    );
+                              }
+                            },
                   minimumSize: Size(0, 0),
                   child: Container(
                     padding: const EdgeInsets.all(8),
@@ -70,21 +70,21 @@ class DriverDistanceSelect extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   onPressed:
                       (result?.isLoading ?? false || state.radius == null)
-                      ? null
-                      : () async {
-                          if ((state.radius ?? 0) < 10000) {
-                            final newDistance = (state.radius ?? 0) + 1000;
-                            await runMutation(
-                              UpdateDriverSearchDistanceArguments(
-                                distance: newDistance,
-                              ).toJson(),
-                            ).networkResult;
-                            // ignore: use_build_context_synchronously
-                            context.read<CurrentLocationCubit>().setRadius(
-                              newDistance,
-                            );
-                          }
-                        },
+                          ? null
+                          : () async {
+                              if ((state.radius ?? 0) < 10000) {
+                                final newDistance = (state.radius ?? 0) + 1000;
+                                await runMutation(
+                                  UpdateDriverSearchDistanceArguments(
+                                    distance: newDistance,
+                                  ).toJson(),
+                                ).networkResult;
+                                // ignore: use_build_context_synchronously
+                                context.read<CurrentLocationCubit>().setRadius(
+                                      newDistance,
+                                    );
+                              }
+                            },
                   minimumSize: Size(0, 0),
                   child: Container(
                     padding: const EdgeInsets.all(8),

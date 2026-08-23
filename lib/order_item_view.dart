@@ -35,12 +35,12 @@ class OrderItemView extends StatelessWidget {
         final driverDistance = state.location == null
             ? order.distanceBest
             : (Geolocator.distanceBetween(
-                    state.location!.latitude,
-                    state.location!.longitude,
-                    order.points.first.lat,
-                    order.points.first.lng,
-                  ) /
-                  1000);
+                  state.location!.latitude,
+                  state.location!.longitude,
+                  order.points.first.lat,
+                  order.points.first.lng,
+                ) /
+                1000);
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: RidySheetView(
@@ -64,9 +64,7 @@ class OrderItemView extends StatelessWidget {
                           style: Theme.of(context).textTheme.titleMedium,
                         ),
                         Text(
-                          S
-                              .of(context)
-                              .request_card_distance(
+                          S.of(context).request_card_distance(
                                 (driverDistance / 1000).round(),
                               ),
                           style: Theme.of(context).textTheme.labelMedium,
@@ -156,9 +154,8 @@ class OrderItemView extends StatelessWidget {
                       .toList(),
                 ),
                 ElevatedButton(
-                  onPressed: !isActionActive
-                      ? null
-                      : () => onAcceptCallback(order.id),
+                  onPressed:
+                      !isActionActive ? null : () => onAcceptCallback(order.id),
                   child: Row(
                     children: [
                       const Spacer(),

@@ -104,81 +104,77 @@ class _RegisterPhoneNumberViewState extends State<RegisterPhoneNumberView> {
             options: MutationOptions(document: LOGIN_MUTATION_DOCUMENT),
             builder: (RunMutation runMutation, QueryResult? result) =>
                 ElevatedButton(
-                  onPressed: () async {
-                    if (loginTermsAndConditionsUrl.isNotEmpty &&
-                        !agreedToTerms) {
-                      return;
-                    }
-                    if (phoneNumber.isEmpty) {
-                      return;
-                    }
-                    widget.onLoadingStateUpdated(true);
-                    if (kIsWeb) {
-                      final authResult = await FirebaseAuth.instance
-                          .signInWithPhoneNumber(phoneNumber);
+              onPressed: () async {
+                if (loginTermsAndConditionsUrl.isNotEmpty && !agreedToTerms) {
+                  return;
+                }
+                if (phoneNumber.isEmpty) {
+                  return;
+                }
+                widget.onLoadingStateUpdated(true);
+                if (kIsWeb) {
+                  final authResult = await FirebaseAuth.instance
+                      .signInWithPhoneNumber(phoneNumber);
+                  widget.onCodeSent(
+                    authResult.verificationId,
+                    countryCode + phoneNumber,
+                  );
+                } else {
+                  FirebaseAuth.instance.verifyPhoneNumber(
+                    phoneNumber: countryCode + phoneNumber,
+                    verificationCompleted:
+                        (PhoneAuthCredential phoneAuthCredential) async {
+                      if (kDebugMode) {
+                        print('Firebase Auth: verification completed');
+                      }
+                      final UserCredential cr = await FirebaseAuth.instance
+                          .signInWithCredential(phoneAuthCredential);
+                      final String? token = await cr.user!.getIdToken();
+                      if (token == null) {
+                        throw Exception('Failed to get Firebase token');
+                      }
+                      final String firebaseToken = token;
+                      final args = LoginArguments(
+                        firebaseToken: firebaseToken,
+                      ).toJson();
+                      final netResult = await runMutation(args).networkResult;
+                      final loginRes = Login$Mutation.fromJson(
+                        netResult!.data!,
+                      );
+                      final jwt = loginRes.login.jwtToken;
+                      Hive.box('user').put('jwt', jwt);
+                      widget.onLoadingStateUpdated(false);
+                      widget.onLoggedIn();
+                    },
+                    verificationFailed: (FirebaseAuthException error) {
+                      if (kDebugMode) {
+                        print('Firebase Auth: verification failed');
+                      }
+                      widget.onLoadingStateUpdated(false);
+                      final snackBar = SnackBar(
+                        content: Text(
+                          error.message ?? S.of(context).message_unknown_error,
+                        ),
+                      );
+                      ScaffoldMessenger.of(context).showSnackBar(snackBar);
+                    },
+                    codeSent:
+                        (String verificationId, int? forceResendingToken) {
+                      if (kDebugMode) {
+                        print('Firebase Auth: code sent');
+                      }
+                      widget.onLoadingStateUpdated(false);
                       widget.onCodeSent(
-                        authResult.verificationId,
+                        verificationId,
                         countryCode + phoneNumber,
                       );
-                    } else {
-                      FirebaseAuth.instance.verifyPhoneNumber(
-                        phoneNumber: countryCode + phoneNumber,
-                        verificationCompleted:
-                            (PhoneAuthCredential phoneAuthCredential) async {
-                              if (kDebugMode) {
-                                print('Firebase Auth: verification completed');
-                              }
-                              final UserCredential cr = await FirebaseAuth
-                                  .instance
-                                  .signInWithCredential(phoneAuthCredential);
-                              final String? token = await cr.user!.getIdToken();
-                              if (token == null) {
-                                throw Exception('Failed to get Firebase token');
-                              }
-                              final String firebaseToken = token;
-                              final args = LoginArguments(
-                                firebaseToken: firebaseToken,
-                              ).toJson();
-                              final netResult = await runMutation(args)
-                                  .networkResult;
-                              final loginRes = Login$Mutation.fromJson(
-                                netResult!.data!,
-                              );
-                              final jwt = loginRes.login.jwtToken;
-                              Hive.box('user').put('jwt', jwt);
-                              widget.onLoadingStateUpdated(false);
-                              widget.onLoggedIn();
-                            },
-                        verificationFailed: (FirebaseAuthException error) {
-                          if (kDebugMode) {
-                            print('Firebase Auth: verification failed');
-                          }
-                          widget.onLoadingStateUpdated(false);
-                          final snackBar = SnackBar(
-                            content: Text(
-                              error.message ??
-                                  S.of(context).message_unknown_error,
-                            ),
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                        },
-                        codeSent:
-                            (String verificationId, int? forceResendingToken) {
-                              if (kDebugMode) {
-                                print('Firebase Auth: code sent');
-                              }
-                              widget.onLoadingStateUpdated(false);
-                              widget.onCodeSent(
-                                verificationId,
-                                countryCode + phoneNumber,
-                              );
-                            },
-                        codeAutoRetrievalTimeout: (String verificationId) {},
-                      );
-                    }
-                  },
-                  child: Text(S.of(context).action_continue),
-                ),
+                    },
+                    codeAutoRetrievalTimeout: (String verificationId) {},
+                  );
+                }
+              },
+              child: Text(S.of(context).action_continue),
+            ),
           ),
         ),
       ],

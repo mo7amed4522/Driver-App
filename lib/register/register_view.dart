@@ -152,131 +152,127 @@ class _RegisterViewState extends State<RegisterView> {
                     document: GET_DRIVER_QUERY_DOCUMENT,
                     fetchPolicy: FetchPolicy.networkOnly,
                   ),
-                  builder:
-                      (
-                        QueryResult result, {
-                        Refetch? refetch,
-                        FetchMore? fetchMore,
-                      }) {
-                        GetDriver$Query$Driver? driver;
-                        if (result.isLoading) {
-                          return Expanded(child: QueryResultView(result));
+                  builder: (
+                    QueryResult result, {
+                    Refetch? refetch,
+                    FetchMore? fetchMore,
+                  }) {
+                    GetDriver$Query$Driver? driver;
+                    if (result.isLoading) {
+                      return Expanded(child: QueryResultView(result));
+                    }
+                    List<GetDriver$Query$CarModel> models = [];
+                    List<GetDriver$Query$CarColor> colors = [];
+                    GetDriver$Query query = GetDriver$Query();
+                    if (result.data != null) {
+                      query = GetDriver$Query.fromJson(result.data!);
+                      models = query.carModels;
+                      colors = query.carColors;
+                      if (query.driver?.mobileNumber != null) {
+                        if (!RegisterView.allowedStatuses.contains(
+                          query.driver?.status,
+                        )) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            Navigator.pop(context);
+                          });
+                          return Container();
                         }
-                        List<GetDriver$Query$CarModel> models = [];
-                        List<GetDriver$Query$CarColor> colors = [];
-                        GetDriver$Query query = GetDriver$Query();
-                        if (result.data != null) {
-                          query = GetDriver$Query.fromJson(result.data!);
-                          models = query.carModels;
-                          colors = query.carColors;
-                          if (query.driver?.mobileNumber != null) {
-                            if (!RegisterView.allowedStatuses.contains(
-                              query.driver?.status,
-                            )) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                Navigator.pop(context);
-                              });
-                              return Container();
-                            }
+                      }
+                      driver = query.driver;
+                      models = query.carModels;
+                      colors = query.carColors;
+                      if (driver != null && activePageId < 2) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          pageController.jumpToPage(2);
+                          setState(() {
+                            activePageId = 2;
+                          });
+                        });
+                      }
+                      if (pageController.initialPage != activePageId) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          pageController.jumpToPage(activePageId);
+                        });
+                      }
+                    }
+                    return Expanded(
+                      child: PageView.builder(
+                        controller: pageController,
+                        itemCount: 6,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onPageChanged: (value) =>
+                            setState(() => activePageId = value),
+                        itemBuilder: ((context, index) {
+                          switch (index) {
+                            case 0:
+                              return RegisterPhoneNumberView(
+                                driver: driver,
+                                onCodeSent: (verificationId, phoneNumber) {
+                                  this.verificationId = verificationId;
+                                  this.phoneNumber = phoneNumber;
+                                  pageController.jumpToPage(1);
+                                },
+                                onLoggedIn: () {
+                                  pageController.jumpToPage(2);
+                                  refetch!();
+                                },
+                                onLoadingStateUpdated: (loading) =>
+                                    setState(() => isLoading = loading),
+                              );
+
+                            case 1:
+                              return RegisterVerificationCodeView(
+                                verificationCodeId: verificationId!,
+                                phoneNumber: phoneNumber!,
+                                onLoggedIn: () {
+                                  pageController.jumpToPage(2);
+                                  refetch!();
+                                },
+                                onLoadingStateUpdated: (loading) =>
+                                    setState(() => isLoading = loading),
+                              );
+
+                            case 2:
+                              return RegisterContactDetailsView(
+                                driver: driver!,
+                                onContinue: () => pageController.jumpToPage(3),
+                                onLoadingStateUpdated: (loading) =>
+                                    setState(() => isLoading = loading),
+                              );
+
+                            case 3:
+                              return RegisterRideDetailsView(
+                                driver: driver!,
+                                models: models,
+                                colors: colors,
+                                onContinue: () => pageController.jumpToPage(4),
+                                onLoadingStateUpdated: (loading) =>
+                                    setState(() => isLoading = loading),
+                              );
+
+                            case 4:
+                              return RegisterPayoutDetailsView(
+                                driver: driver!,
+                                onContinue: () => pageController.jumpToPage(5),
+                                onLoadingStateUpdated: (loading) =>
+                                    setState(() => isLoading = loading),
+                              );
+
+                            case 5:
+                              return RegisterUploadDocumentsView(
+                                driver: driver!,
+                                onUploaded: () => refetch!(),
+                                onLoadingStateUpdated: (loading) =>
+                                    setState(() => isLoading = loading),
+                              );
+
+                            default:
+                              return const Text("Unsupported state");
                           }
-                          driver = query.driver;
-                          models = query.carModels;
-                          colors = query.carColors;
-                          if (driver != null && activePageId < 2) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              pageController.jumpToPage(2);
-                              setState(() {
-                                activePageId = 2;
-                              });
-                            });
-                          }
-                          if (pageController.initialPage != activePageId) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              pageController.jumpToPage(activePageId);
-                            });
-                          }
-                        }
-                        return Expanded(
-                          child: PageView.builder(
-                            controller: pageController,
-                            itemCount: 6,
-                            physics: const NeverScrollableScrollPhysics(),
-                            onPageChanged: (value) =>
-                                setState(() => activePageId = value),
-                            itemBuilder: ((context, index) {
-                              switch (index) {
-                                case 0:
-                                  return RegisterPhoneNumberView(
-                                    driver: driver,
-                                    onCodeSent: (verificationId, phoneNumber) {
-                                      this.verificationId = verificationId;
-                                      this.phoneNumber = phoneNumber;
-                                      pageController.jumpToPage(1);
-                                    },
-                                    onLoggedIn: () {
-                                      pageController.jumpToPage(2);
-                                      refetch!();
-                                    },
-                                    onLoadingStateUpdated: (loading) =>
-                                        setState(() => isLoading = loading),
-                                  );
-
-                                case 1:
-                                  return RegisterVerificationCodeView(
-                                    verificationCodeId: verificationId!,
-                                    phoneNumber: phoneNumber!,
-                                    onLoggedIn: () {
-                                      pageController.jumpToPage(2);
-                                      refetch!();
-                                    },
-                                    onLoadingStateUpdated: (loading) =>
-                                        setState(() => isLoading = loading),
-                                  );
-
-                                case 2:
-                                  return RegisterContactDetailsView(
-                                    driver: driver!,
-                                    onContinue: () =>
-                                        pageController.jumpToPage(3),
-                                    onLoadingStateUpdated: (loading) =>
-                                        setState(() => isLoading = loading),
-                                  );
-
-                                case 3:
-                                  return RegisterRideDetailsView(
-                                    driver: driver!,
-                                    models: models,
-                                    colors: colors,
-                                    onContinue: () =>
-                                        pageController.jumpToPage(4),
-                                    onLoadingStateUpdated: (loading) =>
-                                        setState(() => isLoading = loading),
-                                  );
-
-                                case 4:
-                                  return RegisterPayoutDetailsView(
-                                    driver: driver!,
-                                    onContinue: () =>
-                                        pageController.jumpToPage(5),
-                                    onLoadingStateUpdated: (loading) =>
-                                        setState(() => isLoading = loading),
-                                  );
-
-                                case 5:
-                                  return RegisterUploadDocumentsView(
-                                    driver: driver!,
-                                    onUploaded: () => refetch!(),
-                                    onLoadingStateUpdated: (loading) =>
-                                        setState(() => isLoading = loading),
-                                  );
-
-                                default:
-                                  return const Text("Unsupported state");
-                              }
-                            }),
-                          ),
-                        );
-                      },
+                        }),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
@@ -326,10 +322,10 @@ class RegistrationStepOrb extends StatelessWidget {
                   child: Text(
                     "${id + 1}",
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: activePageId >= id
-                          ? CustomTheme.primaryColors.shade50
-                          : CustomTheme.neutralColors.shade800,
-                    ),
+                          color: activePageId >= id
+                              ? CustomTheme.primaryColors.shade50
+                              : CustomTheme.neutralColors.shade800,
+                        ),
                   ),
                 ),
               ),

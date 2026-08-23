@@ -169,7 +169,9 @@ class WaitingToCompleteSubmissionUnregisteredView extends StatelessWidget {
               Text(
                 S.of(context).incomplete_registration_description,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
                     ?.copyWith(color: CustomTheme.neutralColors.shade600),
               ),
             ],
@@ -219,7 +221,9 @@ class RegistrationSubmittedUnregisteredView extends StatelessWidget {
               Text(
                 S.of(context).pending_review_registration_description,
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodySmall
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
                     ?.copyWith(color: CustomTheme.neutralColors.shade600),
               ),
             ],
@@ -274,7 +278,9 @@ class HardRejectUnregisteredView extends StatelessWidget {
                   Text(
                     S.of(context).hard_reject_registration,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
                         ?.copyWith(color: const Color(0xffb20d0e)),
                   ),
                 ],
@@ -322,7 +328,9 @@ class SoftRejectUnregisteredView extends StatelessWidget {
                   Text(
                     S.of(context).soft_rejection_description,
                     textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodySmall
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodySmall
                         ?.copyWith(color: const Color(0xffb20d0e)),
                   ),
                 ],
@@ -331,7 +339,9 @@ class SoftRejectUnregisteredView extends StatelessWidget {
                 Text(
                   rejectionNote ?? "",
                   textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodySmall
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
                       ?.copyWith(color: const Color(0xffb20d0e)),
                 ),
             ],

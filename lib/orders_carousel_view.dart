@@ -29,99 +29,96 @@ class OrdersCarouselView extends StatelessWidget {
           document: AVAILABLE_ORDERS_QUERY_DOCUMENT,
           fetchPolicy: FetchPolicy.noCache,
         ),
-        builder:
-            (
-              QueryResult result, {
-              Future<QueryResult?> Function()? refetch,
-              FetchMore? fetchMore,
-            }) {
-              if (result.isLoading || result.hasException) {
-                return QueryResultView(result);
+        builder: (
+          QueryResult result, {
+          Future<QueryResult?> Function()? refetch,
+          FetchMore? fetchMore,
+        }) {
+          if (result.isLoading || result.hasException) {
+            return QueryResultView(result);
+          }
+          // if ((mainBloc.state as StatusOnline).orders.length !=
+          //     result.data!['availableOrders'].length) {
+          //   mainBloc
+          //       .add(AvailableOrdersUpdated(result.data!['availableOrders']));
+          // }
+          return Subscription(
+            options: SubscriptionOptions(
+              document: ORDER_CREATED_SUBSCRIPTION_DOCUMENT,
+              fetchPolicy: FetchPolicy.noCache,
+            ),
+            builder: (QueryResult? created) {
+              if (created?.data != null) {
+                mainBloc.add(AvailabledOrderAdded(created!.data!));
               }
-              // if ((mainBloc.state as StatusOnline).orders.length !=
-              //     result.data!['availableOrders'].length) {
-              //   mainBloc
-              //       .add(AvailableOrdersUpdated(result.data!['availableOrders']));
-              // }
               return Subscription(
                 options: SubscriptionOptions(
-                  document: ORDER_CREATED_SUBSCRIPTION_DOCUMENT,
-                  fetchPolicy: FetchPolicy.noCache,
+                  document: ORDER_REMOVED_SUBSCRIPTION_DOCUMENT,
                 ),
-                builder: (QueryResult? created) {
-                  if (created?.data != null) {
-                    mainBloc.add(AvailabledOrderAdded(created!.data!));
+                builder: (QueryResult? updated) {
+                  if (updated?.data != null) {
+                    mainBloc.add(AvailableOrderRemoved(updated!.data!));
                   }
-                  return Subscription(
-                    options: SubscriptionOptions(
-                      document: ORDER_REMOVED_SUBSCRIPTION_DOCUMENT,
+                  return Mutation(
+                    options: MutationOptions(
+                      document: UPDATE_ORDER_STATUS_MUTATION_DOCUMENT,
                     ),
-                    builder: (QueryResult? updated) {
-                      if (updated?.data != null) {
-                        mainBloc.add(AvailableOrderRemoved(updated!.data!));
-                      }
-                      return Mutation(
-                        options: MutationOptions(
-                          document: UPDATE_ORDER_STATUS_MUTATION_DOCUMENT,
-                        ),
-                        builder:
-                            (
-                              RunMutation runMutation,
-                              QueryResult? result,
-                            ) => BlocBuilder<MainBloc, MainState>(
-                              builder: (context, state) {
-                                if ((state as StatusOnline).orders.isEmpty) {
-                                  return const DriverDistanceSelect();
-                                }
-                                return PageView.builder(
-                                  controller: PageController(
-                                    viewportFraction: 0.9,
-                                  ),
-                                  itemCount: state.orders.length,
-                                  onPageChanged: (index) =>
-                                      mainBloc.add(SelectedOrderChanged(index)),
-                                  itemBuilder: (context, index) => OrderItemView(
-                                    order: state.orders[index],
-                                    isActionActive:
-                                        ((result?.isLoading ?? false) == false),
-                                    onAcceptCallback: (String orderId) async {
-                                      final result = await runMutation(
-                                        UpdateOrderStatusArguments(
-                                          orderId: orderId,
-                                          status: OrderStatus.driverAccepted,
-                                        ).toJson(),
-                                      ).networkResult;
-                                      if (result?.hasException ?? true) {
-                                        final snackBar = SnackBar(
-                                          content: Text(
-                                            result?.exception?.graphqlErrors
-                                                    .map((e) => e.message)
-                                                    .join(',') ??
-                                                S
-                                                    .of(context)
-                                                    .message_unknown_error,
-                                          ),
-                                        );
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(snackBar);
-                                        return;
-                                      }
-                                      mainBloc.add(
-                                        CurrentOrderUpdated(
-                                          result!.data!['updateOneOrder'],
-                                        ),
-                                      );
-                                    },
+                    builder: (
+                      RunMutation runMutation,
+                      QueryResult? result,
+                    ) =>
+                        BlocBuilder<MainBloc, MainState>(
+                      builder: (context, state) {
+                        if ((state as StatusOnline).orders.isEmpty) {
+                          return const DriverDistanceSelect();
+                        }
+                        return PageView.builder(
+                          controller: PageController(
+                            viewportFraction: 0.9,
+                          ),
+                          itemCount: state.orders.length,
+                          onPageChanged: (index) =>
+                              mainBloc.add(SelectedOrderChanged(index)),
+                          itemBuilder: (context, index) => OrderItemView(
+                            order: state.orders[index],
+                            isActionActive:
+                                ((result?.isLoading ?? false) == false),
+                            onAcceptCallback: (String orderId) async {
+                              final result = await runMutation(
+                                UpdateOrderStatusArguments(
+                                  orderId: orderId,
+                                  status: OrderStatus.driverAccepted,
+                                ).toJson(),
+                              ).networkResult;
+                              if (result?.hasException ?? true) {
+                                final snackBar = SnackBar(
+                                  content: Text(
+                                    result?.exception?.graphqlErrors
+                                            .map((e) => e.message)
+                                            .join(',') ??
+                                        S.of(context).message_unknown_error,
                                   ),
                                 );
-                              },
-                            ),
-                      );
-                    },
+                                ScaffoldMessenger.of(context)
+                                    .showSnackBar(snackBar);
+                                return;
+                              }
+                              mainBloc.add(
+                                CurrentOrderUpdated(
+                                  result!.data!['updateOneOrder'],
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               );
             },
+          );
+        },
       ),
     );
   }

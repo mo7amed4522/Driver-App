@@ -44,8 +44,7 @@ class OrderStatusCardView extends StatelessWidget {
                 bloc,
                 runMutation,
                 OrderStatus.finished,
-                cashPayment:
-                    (order.costAfterCoupon +
+                cashPayment: (order.costAfterCoupon +
                     order.tipAmount -
                     order.paidAmount),
               );
@@ -64,7 +63,9 @@ class OrderStatusCardView extends StatelessWidget {
                   elevation: 0,
                   label: Text(
                     S.of(context).order_status_action_navigate,
-                    style: Theme.of(context).textTheme.titleMedium
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
                         ?.copyWith(color: Colors.white),
                   ),
                   icon: const Icon(Ionicons.navigate),
@@ -105,25 +106,25 @@ class OrderStatusCardView extends StatelessWidget {
                                               ) ??
                                               false)
                                           ? S
-                                                .of(context)
-                                                .rider_expected_time_past(
-                                                  order.etaPickup
-                                                          ?.difference(
-                                                            DateTime.now(),
-                                                          )
-                                                          .inMinutes ??
-                                                      0,
-                                                )
+                                              .of(context)
+                                              .rider_expected_time_past(
+                                                order.etaPickup
+                                                        ?.difference(
+                                                          DateTime.now(),
+                                                        )
+                                                        .inMinutes ??
+                                                    0,
+                                              )
                                           : S
-                                                .of(context)
-                                                .rider_expected_time_future(
-                                                  order.etaPickup
-                                                          ?.difference(
-                                                            DateTime.now(),
-                                                          )
-                                                          .inMinutes ??
-                                                      0,
-                                                ),
+                                              .of(context)
+                                              .rider_expected_time_future(
+                                                order.etaPickup
+                                                        ?.difference(
+                                                          DateTime.now(),
+                                                        )
+                                                        .inMinutes ??
+                                                    0,
+                                              ),
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelSmall,
@@ -140,8 +141,7 @@ class OrderStatusCardView extends StatelessWidget {
                                           ? Ionicons.close_circle
                                           : Ionicons.checkmark_circle,
                                       size: 14,
-                                      color:
-                                          order.paidAmount <
+                                      color: order.paidAmount <
                                               order.costAfterCoupon
                                           ? const Color(0xffb20d0e)
                                           : const Color(0xff108910),
@@ -150,17 +150,16 @@ class OrderStatusCardView extends StatelessWidget {
                                     Text(
                                       order.paidAmount < order.costAfterCoupon
                                           ? S
-                                                .of(context)
-                                                .order_payment_status_unpaid
+                                              .of(context)
+                                              .order_payment_status_unpaid
                                           : S
-                                                .of(context)
-                                                .order_payment_status_paid,
+                                              .of(context)
+                                              .order_payment_status_paid,
                                       style: Theme.of(context)
                                           .textTheme
                                           .labelMedium
                                           ?.copyWith(
-                                            color:
-                                                order.paidAmount <
+                                            color: order.paidAmount <
                                                     order.costAfterCoupon
                                                 ? const Color(0xffb20d0e)
                                                 : const Color(0xff108910),
@@ -207,11 +206,11 @@ class OrderStatusCardView extends StatelessWidget {
                           onPressed: () async {
                             final result =
                                 await showModalBottomSheet<RideOptionsResult>(
-                                  context: context,
-                                  builder: (context) {
-                                    return const RideOptionsSheetView();
-                                  },
-                                );
+                              context: context,
+                              builder: (context) {
+                                return const RideOptionsSheetView();
+                              },
+                            );
                             switch (result) {
                               case RideOptionsResult.cancel:
                                 updateCurrentOrderStatus(
@@ -253,10 +252,10 @@ class OrderStatusCardView extends StatelessWidget {
                         onPressed: (result?.isLoading ?? false)
                             ? null
                             : () => updateCurrentOrderStatus(
-                                bloc,
-                                runMutation,
-                                OrderStatus.arrived,
-                              ),
+                                  bloc,
+                                  runMutation,
+                                  OrderStatus.arrived,
+                                ),
                         child: Text(S.of(context).order_status_action_arrived),
                       ),
                     ),
@@ -267,10 +266,10 @@ class OrderStatusCardView extends StatelessWidget {
                         onPressed: (result?.isLoading ?? false)
                             ? null
                             : () => updateCurrentOrderStatus(
-                                bloc,
-                                runMutation,
-                                OrderStatus.started,
-                              ),
+                                  bloc,
+                                  runMutation,
+                                  OrderStatus.started,
+                                ),
                         child: Text(S.of(context).order_status_action_start),
                       ),
                     ),
@@ -281,10 +280,10 @@ class OrderStatusCardView extends StatelessWidget {
                         onPressed: (result?.isLoading ?? false)
                             ? null
                             : () => updateCurrentOrderStatus(
-                                bloc,
-                                runMutation,
-                                OrderStatus.finished,
-                              ),
+                                  bloc,
+                                  runMutation,
+                                  OrderStatus.finished,
+                                ),
                         child: Text(S.of(context).order_status_action_finished),
                       ),
                     ),

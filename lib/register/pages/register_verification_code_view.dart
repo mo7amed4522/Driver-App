@@ -61,9 +61,9 @@ class _RegisterVerificationCodeViewState
                 widget.onLoadingStateUpdated(true);
                 final PhoneAuthCredential credential =
                     PhoneAuthProvider.credential(
-                      verificationId: widget.verificationCodeId,
-                      smsCode: value,
-                    );
+                  verificationId: widget.verificationCodeId,
+                  smsCode: value,
+                );
                 final UserCredential cr = await FirebaseAuth.instance
                     .signInWithCredential(credential);
                 final String? token = await cr.user!.getIdToken();
@@ -71,8 +71,8 @@ class _RegisterVerificationCodeViewState
                   throw Exception('Failed to get Firebase token');
                 }
                 final String firebaseToken = token;
-                final args = LoginArguments(firebaseToken: firebaseToken)
-                    .toJson();
+                final args =
+                    LoginArguments(firebaseToken: firebaseToken).toJson();
                 final netResult = await runMutation(args).networkResult;
                 final loginRes = Login$Mutation.fromJson(netResult!.data!);
                 final jwt = loginRes.login.jwtToken;

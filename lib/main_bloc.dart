@@ -72,10 +72,10 @@ class StatusOnline extends MainState {
   AvailableOrderMixin? selectedOrder;
 
   StatusOnline({driver, required this.orders, this.selectedOrder})
-    : super(
-        driver,
-        selectedOrder != null
-            ? selectedOrder.points
+      : super(
+          driver,
+          selectedOrder != null
+              ? selectedOrder.points
                   .asMap()
                   .entries
                   .map(
@@ -86,8 +86,8 @@ class StatusOnline extends MainState {
                     ),
                   )
                   .toList()
-            : [],
-      );
+              : [],
+        );
 }
 
 class StatusInService extends MainState {
@@ -172,9 +172,9 @@ class MainBloc extends Bloc<MainEvent, MainState> {
           )
           .toList();
       final sumOldIds = (state as StatusOnline).orders.fold<int>(
-        0,
-        (previousValue, element) => previousValue + int.parse(element.id),
-      );
+            0,
+            (previousValue, element) => previousValue + int.parse(element.id),
+          );
       final sumNewIds = orders.fold<int>(
         0,
         (value, element) => value + int.parse(element.id),
@@ -193,13 +193,13 @@ class MainBloc extends Bloc<MainEvent, MainState> {
     on<AvailabledOrderAdded>((event, emit) {
       if (state is StatusOnline) {
         if ((state as StatusOnline).orders.indexWhere(
-              (element) => element.id == event.order['orderCreated']['id'],
-            ) ==
+                  (element) => element.id == event.order['orderCreated']['id'],
+                ) ==
             -1) {
           final AvailableOrderMixin created =
               AvailableOrders$Query$Order.fromJson(
-                event.order['orderCreated'] as Map<String, dynamic>,
-              );
+            event.order['orderCreated'] as Map<String, dynamic>,
+          );
           (state as StatusOnline).orders.add(created);
           emit(
             StatusOnline(
@@ -216,15 +216,15 @@ class MainBloc extends Bloc<MainEvent, MainState> {
 
     on<AvailableOrderRemoved>((event, emit) {
       if (state is StatusOnline) {
-        final updated = OrderRemoved$Subscription.fromJson(event.order)
-            .orderRemoved;
+        final updated =
+            OrderRemoved$Subscription.fromJson(event.order).orderRemoved;
         if ((state as StatusOnline).orders.indexWhere(
-              (element) => element.id == updated.id,
-            ) >
+                  (element) => element.id == updated.id,
+                ) >
             -1) {
           (state as StatusOnline).orders.removeWhere(
-            (element) => element.id == updated.id,
-          );
+                (element) => element.id == updated.id,
+              );
           emit(
             StatusOnline(
               driver: state.driver,

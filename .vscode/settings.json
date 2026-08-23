@@ -1,4 +1,9 @@
 {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "Dart-Code.flutter",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.dart": "explicit"
+    },
     "cSpell.words": [
         "Addd",
         "algoliasearch",
