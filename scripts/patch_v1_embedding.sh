@@ -2,57 +2,104 @@
 set -euo pipefail
 
 # Patch outdated plugins in pub cache for Flutter 3.47.1 compatibility
-# Fixes: v1 embedding API removal (PluginRegistry.Registrar deleted)
-#        and AGP8.x namespace requirements
+# Fixes: v1 embedding API removal, AGP8.x namespace requirements,
+#        deprecated package= in manifests, and google_fonts const issues.
 
 CACHE="$HOME/.pub-cache/hosted/pub.dev"
 
-echo "Patching geolocator_android..."
-python3 - "$CACHE" << 'PYEOF'
-from pathlib import Path
+python3 << 'PYEOF'
+import os
+import re
+import subprocess
 import sys
-cache = sys.argv[1]
-p = Path(f"{cache}/geolocator_android-4.3.1/android/src/main/java/com/baseflow/geolocator/GeolocatorPlugin.java")
-if p.exists():
-    c = p.read_text()
-    c = c.replace('''  @SuppressWarnings("deprecation")
+from pathlib import Path
+
+CACHE = Path(os.environ.get("CACHE", os.path.expanduser("~/.pub-cache/hosted/pub.dev")))
+PROJECT_DIR = Path("/Volumes/Untitled/projects/Driver-App")
+
+def get_locked_packages():
+    """Get list of packages in pubspec.lock that have Android sources."""
+    result = subprocess.run(
+        ["flutter", "pub", "deps", "--no-dev"],
+        capture_output=True, text=True, cwd=PROJECT_DIR
+    )
+    # Also include dev dependencies for packages that might have Android code
+    result2 = subprocess.run(
+        ["flutter", "pub", "deps"],
+        capture_output=True, text=True, cwd=PROJECT_DIR
+    )
+    all_output = result.stdout + result2.stdout
+    
+    # Parse package names from lockfile
+    lockfile = PROJECT_DIR / "pubspec.lock"
+    packages = set()
+    if lockfile.exists():
+        content = lockfile.read_text()
+        for match in re.finditer(r'^  (\S+):', content, re.MULTILINE):
+            name = match.group(1).split('@')[0]
+            if name != 'flutter':
+                packages.add(name)
+    return packages
+
+def patch_namespace(pkg_dir):
+    """Add namespace to build.gradle if missing."""
+    bg = pkg_dir / "build.gradle"
+    if not bg.exists():
+        return False
+    content = bg.read_text()
+    if "namespace" in content:
+        return False
+    if "android {" in content:
+        group_match = re.search(r"group\s+'([^']+)'", content)
+        namespace = group_match.group(1) if group_match else "com.example.plugin"
+        content = content.replace(
+            "android {\n",
+            f"android {{\n    namespace '{namespace}'\n",
+            1
+        )
+        bg.write_text(content)
+        print(f"  Patched namespace in {pkg_dir.name}")
+        return True
+    return False
+
+def patch_manifest(pkg_dir):
+    """Remove package= attribute from AndroidManifest.xml."""
+    manifest = pkg_dir / "src/main/AndroidManifest.xml"
+    if not manifest.exists():
+        return False
+    content = manifest.read_text()
+    if 'package=' not in content:
+        return False
+    content = re.sub(r'\s+package="[^"]+"', '', content)
+    manifest.write_text(content)
+    print(f"  Patched manifest in {pkg_dir.name}")
+    return True
+
+def patch_geolocator(pkg_dir):
+    """Remove v1 embedding registerWith and pluginRegistrar."""
+    java_file = pkg_dir / "src/main/java/com/baseflow/geolocator/GeolocatorPlugin.java"
+    if not java_file.exists():
+        return False
+    content = java_file.read_text()
+    modified = False
+
+    old_field = '''  @SuppressWarnings("deprecation")
   @Nullable
   private io.flutter.plugin.common.PluginRegistry.Registrar pluginRegistrar;
-''', '')
-    c = c.replace('''  // This static function is optional and equivalent to onAttachedToEngine. It supports the old
-  // pre-Flutter-1.12 Android projects. You are encouraged to continue supporting
-  // plugin registration via this function while apps migrate to use the new Android APIs
-  // post-flutter-1.12 via https://flutter.dev/go/android-project-migration.
-  //
-  // It is encouraged to share logic between onAttachedToEngine and registerWith to keep
-  // them functionally equivalent. Only one of onAttachedToEngine or registerWith will be called
-  // depending on the user's project. onAttachedToEngine or registerWith must both be defined
-  // in the same class.
-  @SuppressWarnings("deprecation")
-  public static void registerWith(io.flutter.plugin.common.PluginRegistry.Registrar registrar) {
-    GeolocatorPlugin geolocatorPlugin = new GeolocatorPlugin();
-    geolocatorPlugin.pluginRegistrar = registrar;
-    geolocatorPlugin.registerListeners();
+'''
+    if old_field in content:
+        content = content.replace(old_field, '')
+        modified = True
 
-    MethodCallHandlerImpl methodCallHandler =
-        new MethodCallHandlerImpl(
-            geolocatorPlugin.permissionManager,
-            geolocatorPlugin.geolocationManager,
-            geolocatorPlugin.locationAccuracyManager);
-    methodCallHandler.startListening(registrar.context(), registrar.messenger());
-    methodCallHandler.setActivity(registrar.activity());
+    pattern = r'''  // This static function is optional and equivalent to onAttachedToEngine\..*?
+  public static void registerWith\(io\.flutter\.plugin\.common\.PluginRegistry\.Registrar registrar\) \{[^}]*\{[^}]*\}[^}]*\}
+'''
+    content_new = re.sub(pattern, '', content, flags=re.DOTALL)
+    if content_new != content:
+        content = content_new
+        modified = True
 
-    StreamHandlerImpl streamHandler = new StreamHandlerImpl(geolocatorPlugin.permissionManager);
-    streamHandler.startListening(registrar.context(), registrar.messenger());
-
-    LocationServiceHandlerImpl locationServiceHandler = new LocationServiceHandlerImpl();
-    locationServiceHandler.startListening(registrar.context(), registrar.messenger());
-    locationServiceHandler.setContext(registrar.activeContext());
-    geolocatorPlugin.bindForegroundService(registrar.activeContext());
-  }
-
-''', '')
-    c = c.replace('''  private void registerListeners() {
+    old_method = '''  private void registerListeners() {
     if (pluginRegistrar != null) {
       pluginRegistrar.addActivityResultListener(this.geolocationManager);
       pluginRegistrar.addRequestPermissionsResultListener(this.permissionManager);
@@ -60,28 +107,72 @@ if p.exists():
       pluginBinding.addActivityResultListener(this.geolocationManager);
       pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
     }
-  }''', '''  private void registerListeners() {
+  }'''
+    new_method = '''  private void registerListeners() {
     if (pluginBinding != null) {
       pluginBinding.addActivityResultListener(this.geolocationManager);
       pluginBinding.addRequestPermissionsResultListener(this.permissionManager);
     }
-  }''')
-    p.write_text(c)
-    print("Patched geolocator_android-4.3.1")
+  }'''
+    if old_method in content:
+        content = content.replace(old_method, new_method)
+        modified = True
 
-p2 = Path(f"{cache}/flutter_compass-0.7.0/android/build.gradle")
-if p2.exists():
-    c = p2.read_text()
-    c = c.replace('    compileSdkVersion 30', "    namespace 'com.hemanthraj.fluttercompass'\n    compileSdkVersion 34")
-    p2.write_text(c)
-    print("Patched flutter_compass-0.7.0 build.gradle")
+    if modified:
+        java_file.write_text(content)
+        print(f"  Patched GeolocatorPlugin.java in {pkg_dir.name}")
+    return modified
 
-p3 = Path(f"{cache}/flutter_compass-0.7.0/android/src/main/AndroidManifest.xml")
-if p3.exists():
-    c = p3.read_text()
-    c = c.replace('  package="com.hemanthraj.fluttercompass">', '>')
-    p3.write_text(c)
-    print("Patched flutter_compass-0.7.0 manifest")
+def patch_google_fonts(pkg_dir):
+    """Fix const map using FontWeight."""
+    variant_file = pkg_dir / "lib/src/google_fonts_variant.dart"
+    if not variant_file.exists():
+        return False
+    content = variant_file.read_text()
+    if "const _fontWeightToFilenameWeightParts" in content:
+        content = content.replace("const _fontWeightToFilenameWeightParts", "final _fontWeightToFilenameWeightParts")
+        variant_file.write_text(content)
+        print(f"  Patched google_fonts_variant.dart in {pkg_dir.name}")
+        return True
+    return False
+
+# Get packages used by this project
+packages = get_locked_packages()
+print(f"Found {len(packages)} packages in lockfile")
+
+patched_count = 0
+for pkg_dir in sorted(CACHE.glob("*-*/android")):
+    pkg_name = pkg_dir.parent.name
+    # Only patch packages used by this project
+    base_name = pkg_name.split('-')[0]
+    if base_name not in packages and pkg_name not in packages:
+        # Quick check: see if any package prefix matches
+        found = False
+        for p in packages:
+            if pkg_name.startswith(p) or p.startswith(pkg_name.split('-')[0]):
+                found = True
+                break
+        if not found:
+            continue
+
+    try:
+        modified = False
+        bg = pkg_dir / "build.gradle"
+        if bg.exists() and "com.android.library" in bg.read_text():
+            if patch_namespace(pkg_dir):
+                modified = True
+            if patch_manifest(pkg_dir):
+                modified = True
+        if "geolocator_android" in pkg_name and patch_geolocator(pkg_dir):
+            modified = True
+        if "google_fonts" in pkg_name and patch_google_fonts(pkg_dir):
+            modified = True
+        if modified:
+            patched_count += 1
+    except Exception as e:
+        print(f"  Warning: failed to patch {pkg_name}: {e}")
+
+print(f"\nPatched {patched_count} plugins")
 PYEOF
 
 echo "v1 embedding and namespace patches applied successfully"
