@@ -43,3 +43,4 @@ fastlane/report.xml
 android/app/android/upload-keystore.jks
 android/app/key.properties
 ./build
+android/key.properties
