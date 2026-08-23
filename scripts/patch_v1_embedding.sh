@@ -6,29 +6,13 @@ set -euo pipefail
 #        deprecated package= in manifests, and google_fonts const issues.
 
 CACHE="$HOME/.pub-cache/hosted/pub.dev"
-PROJECT_DIR="$(pwd)"
 
-python3 << PYEOF
+python3 << 'PYEOF'
 import os
 import re
-import subprocess
-import sys
 from pathlib import Path
 
 CACHE = Path(os.environ.get("CACHE", os.path.expanduser("~/.pub-cache/hosted/pub.dev")))
-PROJECT_DIR = Path("$PROJECT_DIR")
-
-def get_locked_packages():
-    """Get list of package names from pubspec.lock."""
-    lockfile = PROJECT_DIR / "pubspec.lock"
-    packages = set()
-    if lockfile.exists():
-        content = lockfile.read_text()
-        for match in re.finditer(r'^  (\S+):', content, re.MULTILINE):
-            name = match.group(1).split('@')[0]
-            if name != 'flutter':
-                packages.add(name)
-    return packages
 
 def patch_namespace(pkg_dir):
     """Add namespace to build.gradle if missing."""
@@ -112,37 +96,24 @@ def patch_geolocator(pkg_dir):
         print(f"  Patched GeolocatorPlugin.java in {pkg_dir.name}")
     return modified
 
-def patch_google_fonts(pkg_dir):
-    """Fix const map using FontWeight."""
-    variant_file = pkg_dir / "lib/src/google_fonts_variant.dart"
+def patch_google_fonts(pkg_root):
+    """Fix const map using FontWeight in pure Dart package."""
+    variant_file = pkg_root / "lib" / "src" / "google_fonts_variant.dart"
     if not variant_file.exists():
         return False
     content = variant_file.read_text()
     if "const _fontWeightToFilenameWeightParts" in content:
         content = content.replace("const _fontWeightToFilenameWeightParts", "final _fontWeightToFilenameWeightParts")
         variant_file.write_text(content)
-        print(f"  Patched google_fonts_variant.dart in {pkg_dir.name}")
+        print(f"  Patched google_fonts_variant.dart in {pkg_root.name}")
         return True
     return False
 
-# Get packages used by this project
-packages = get_locked_packages()
-print(f"Found {len(packages)} packages in lockfile")
-
 patched_count = 0
+
+# 1. Patch Android plugin packages (those with android/ directory)
 for pkg_dir in sorted(CACHE.glob("*-*/android")):
     pkg_name = pkg_dir.parent.name
-    # Only patch packages used by this project
-    base_name = pkg_name.split('-')[0]
-    if base_name not in packages and pkg_name not in packages:
-        found = False
-        for p in packages:
-            if pkg_name.startswith(p) or p.startswith(base_name):
-                found = True
-                break
-        if not found:
-            continue
-
     try:
         modified = False
         bg = pkg_dir / "build.gradle"
@@ -153,12 +124,20 @@ for pkg_dir in sorted(CACHE.glob("*-*/android")):
                 modified = True
         if "geolocator_android" in pkg_name and patch_geolocator(pkg_dir):
             modified = True
-        if "google_fonts" in pkg_name and patch_google_fonts(pkg_dir):
-            modified = True
         if modified:
             patched_count += 1
     except Exception as e:
         print(f"  Warning: failed to patch {pkg_name}: {e}")
+
+# 2. Patch pure Dart packages that have known issues
+for pkg_root in sorted(CACHE.glob("*-*/")):
+    if not pkg_root.is_dir():
+        continue
+    # Skip if already handled above (has android dir)
+    if (pkg_root / "android").exists():
+        continue
+    if patch_google_fonts(pkg_root):
+        patched_count += 1
 
 print(f"\nPatched {patched_count} plugins")
 PYEOF
