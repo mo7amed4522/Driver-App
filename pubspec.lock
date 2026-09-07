@@ -985,10 +985,10 @@ packages:
     dependency: "direct main"
     description:
       name: lifecycle
-      sha256: e33aac028f1521edf052132f12a6b04058e1b013e36cff3a9941e254a591caef
+      sha256: "98002e74445a11a812765bf9665000930101e9d6cae0c881b68ecaa384e65d97"
       url: "https://pub.dev"
     source: hosted
-    version: "0.10.0"
+    version: "1.0.0"
   linkify:
     dependency: transitive
     description:
